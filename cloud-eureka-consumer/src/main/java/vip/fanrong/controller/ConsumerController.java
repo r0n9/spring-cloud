@@ -11,7 +11,7 @@ import vip.fanrong.client.KdsCrawlerClient;
 /**
  * Created by Rong on 2017/11/22.
  */
-@CrossOrigin(maxAge = 3600)
+@CrossOrigin(maxAge = 3600) // 支持跨域
 @RestController
 public class ConsumerController {
     @Autowired

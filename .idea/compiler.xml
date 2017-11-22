@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="client-kds-crawler" />
+        <module name="cloud-api-gateway" />
         <module name="cloud-eureka-consumer" />
         <module name="cloud-eureka-server" />
         <module name="eureka-server" />
@@ -14,6 +15,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="client-kds-crawler" target="1.8" />
+      <module name="cloud-api-gateway" target="1.8" />
       <module name="cloud-eureka-consumer" target="1.8" />
       <module name="cloud-eureka-server" target="1.8" />
       <module name="eureka-server" target="1.8" />

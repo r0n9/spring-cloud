@@ -13,7 +13,6 @@ import vip.fanrong.service.KdsCrawlerService;
 @RestController
 @RequestMapping(value = "/v1/kds") // parent folder for request mapping path
 @Api(value = "KDS Crawler API", description = "v1")
-@CrossOrigin(maxAge = 3600) // 后端接口支持跨域CORS调用
 public class KdsCrawlerController {
 
     @Autowired
