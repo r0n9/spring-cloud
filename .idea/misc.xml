@@ -8,6 +8,7 @@
         <option value="$PROJECT_DIR$/client-kds-crawler/pom.xml" />
         <option value="$PROJECT_DIR$/cloud-eureka-consumer/pom.xml" />
         <option value="$PROJECT_DIR$/cloud-api-gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/client-uzumiz-crawler/pom.xml" />
       </list>
     </option>
   </component>
