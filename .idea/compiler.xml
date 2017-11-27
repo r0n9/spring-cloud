@@ -19,7 +19,7 @@
       <module name="cloud-eureka-consumer" target="1.8" />
       <module name="cloud-eureka-server" target="1.8" />
       <module name="eureka-server" target="1.8" />
-      <module name="spring-cloud" target="1.5" />
+      <module name="spring-cloud" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
