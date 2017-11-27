@@ -11,6 +11,48 @@
 
     <modules>
         <module>cloud-eureka-server</module>
+        <module>client-kds-crawler</module>
+        <module>cloud-api-gateway</module>
         <module>cloud-eureka-consumer</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <properties>
+                <env>dev</env>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>test</id>
+            <properties>
+                <env>test</env>
+            </properties>
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <env>prod</env>
+            </properties>
+        </profile>
+    </profiles>
+
+    <build>
+        <finalName>spring-cloud</finalName>
+        <filters>
+            <filter>${user.dir}/conf/build-${env}.properties</filter>
+        </filters>
+
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+    </build>
+
 </project>
