@@ -1,0 +1,29 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>v1</id>
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+    <files>
+        <file>
+            <source>${basedir}/cloud-eureka-server/target/cloud-eureka-server-${project.version}.jar</source>
+            <outputDirectory>/cloud-eureka-server/</outputDirectory>
+        </file>
+        <file>
+            <source>${basedir}/script/run.sh</source>
+            <outputDirectory>/bin</outputDirectory>
+            <fileMode>0755</fileMode>
+        </file>
+        <file>
+            <source>${basedir}/cloud-eureka-server/target/classes/application.properties</source>
+            <outputDirectory>/cloud-eureka-server/conf</outputDirectory>
+        </file>
+    </files>
+    <fileSets>
+        <fileSet>
+            <directory>${basedir}/scripts</directory>
+            <outputDirectory>/bin</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>
