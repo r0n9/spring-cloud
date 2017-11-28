@@ -175,6 +175,9 @@
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <skipAssembly>true</skipAssembly>
+                </configuration>
             </plugin>
         </plugins>
     </build>
