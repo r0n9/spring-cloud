@@ -18,7 +18,7 @@ public class ConsumerController {
     KdsCrawlerClient kdsCrawlerClient;
 
     @GetMapping("/kdshot")
-    public ObjectNode getHotTopics(@RequestParam(value = "limit", required = false, defaultValue = "10") int limit) {
+    public ObjectNode getHotTopics(@RequestParam(value = "limit", required = false, defaultValue = "20") int limit) {
         return kdsCrawlerClient.getHotTopics(limit);
     }
 }
