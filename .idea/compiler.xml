@@ -7,7 +7,9 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="client-kds-crawler" />
+        <module name="client-uzumiz-crawler" />
         <module name="cloud-api-gateway" />
+        <module name="cloud-common" />
         <module name="cloud-eureka-consumer" />
         <module name="cloud-eureka-server" />
         <module name="eureka-server" />
@@ -17,6 +19,7 @@
       <module name="client-kds-crawler" target="1.8" />
       <module name="client-uzumiz-crawler" target="1.8" />
       <module name="cloud-api-gateway" target="1.8" />
+      <module name="cloud-common" target="1.8" />
       <module name="cloud-eureka-consumer" target="1.8" />
       <module name="cloud-eureka-server" target="1.8" />
       <module name="eureka-server" target="1.8" />

@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/client-kds-crawler/client-kds-crawler.iml" filepath="$PROJECT_DIR$/client-kds-crawler/client-kds-crawler.iml" />
+      <module fileurl="file://$PROJECT_DIR$/client-uzumiz-crawler/client-uzumiz-crawler.iml" filepath="$PROJECT_DIR$/client-uzumiz-crawler/client-uzumiz-crawler.iml" />
       <module fileurl="file://$PROJECT_DIR$/cloud-api-gateway/cloud-api-gateway.iml" filepath="$PROJECT_DIR$/cloud-api-gateway/cloud-api-gateway.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cloud-common/cloud-common.iml" filepath="$PROJECT_DIR$/cloud-common/cloud-common.iml" />
       <module fileurl="file://$PROJECT_DIR$/cloud-eureka-consumer/cloud-eureka-consumer.iml" filepath="$PROJECT_DIR$/cloud-eureka-consumer/cloud-eureka-consumer.iml" />
       <module fileurl="file://$PROJECT_DIR$/cloud-eureka-server/cloud-eureka-server.iml" filepath="$PROJECT_DIR$/cloud-eureka-server/cloud-eureka-server.iml" />
       <module fileurl="file://$PROJECT_DIR$/spring-cloud.iml" filepath="$PROJECT_DIR$/spring-cloud.iml" />

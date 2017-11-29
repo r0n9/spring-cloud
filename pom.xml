@@ -21,8 +21,10 @@
     </properties>
 
     <modules>
+        <module>cloud-common</module>
         <module>cloud-eureka-server</module>
         <module>client-kds-crawler</module>
+        <module>client-uzumiz-crawler</module>
         <module>cloud-api-gateway</module>
         <module>cloud-eureka-consumer</module>
     </modules>
@@ -76,6 +78,13 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-aop</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.4</version>
+        </dependency>
+
     </dependencies>
 
     <profiles>
@@ -129,18 +138,6 @@
                     <target>1.8</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
