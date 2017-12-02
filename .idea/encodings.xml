@@ -3,7 +3,7 @@
   <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/client-kds-crawler" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/client-uzumiz-crawler" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/client-web-crawler" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cloud-api-gateway" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cloud-common" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cloud-eureka-consumer" charset="UTF-8" />

@@ -24,7 +24,7 @@
         <module>cloud-common</module>
         <module>cloud-eureka-server</module>
         <module>client-kds-crawler</module>
-        <module>client-uzumiz-crawler</module>
+        <module>client-web-crawler</module>
         <module>cloud-api-gateway</module>
         <module>cloud-eureka-consumer</module>
     </modules>

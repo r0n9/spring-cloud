@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>client-uzumiz-crawler</artifactId>
+    <artifactId>client-web-crawler</artifactId>
     <packaging>jar</packaging>
 
-    <name>client-uzumiz-crawler</name>
-    <description>KDS crawler, as the independent service client</description>
+    <name>client-web-crawler</name>
+    <description>Web crawler, as the independent service client</description>
 
 
     <parent>
