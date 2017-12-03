@@ -16,25 +16,25 @@ public class Test {
     public static void main(String[] args) {
         Map<String, String> map = new HashMap<>();
         map.put("keyword", "闪电侠");
-        String body = null;
+        String body = "";
 
-//        body = MyHttpClient.httpPost("http://m.zimuzu.tv/search", map, "");
-        body = MyHttpClient.httpGet("http://m.zimuzu.tv/resource/top");
-//        System.out.println(body);
+        body = MyHttpClient.httpGet("https://whoer.net/zh");
 
         Document doc = Jsoup.parse(body);
+        Elements elements = doc.select("div.column");
 
-        Element rankingBox1 = doc.getElementById("ranking-box-1");
-        Element rankingBox2 = doc.getElementById("ranking-box-2");
-        Element rankingBox3 = doc.getElementById("ranking-box-3");
+        System.out.println("--------------------");
+        System.out.println(elements.first());
 
-        Elements lis = rankingBox1.getElementsByTag("li");
-        for (Element li : lis) {
-            Element ob = li.getElementsByClass("desc").get(0).getElementsByTag("a").get(0);
-            Element obEn = li.getElementsByClass("desc desc-en").get(0).getElementsByTag("a").get(0);
 
-            System.out.println(ob.text() + " " + ob.attr("href") + " " + obEn.text());
-        }
+        body = MyHttpClient.httpGetWithProxy("https://whoer.net/zh", "62.16.21.21", 9999, "HTTP");
+
+        doc = Jsoup.parse(body);
+        elements = doc.select("div.column");
+
+        System.out.println("--------------------");
+        System.out.println(elements.first());
+
 
     }
 }

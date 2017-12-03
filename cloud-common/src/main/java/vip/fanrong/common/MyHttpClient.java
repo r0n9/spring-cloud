@@ -1,22 +1,31 @@
 package vip.fanrong.common;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.ParseException;
-import org.apache.http.client.ClientProtocolException;
+import org.apache.http.*;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import vip.fanrong.common.proxy.FakeDnsResolver;
+import vip.fanrong.common.proxy.MyConnectionSocketFactory;
+import vip.fanrong.common.proxy.MySSLConnectionSocketFactory;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,33 +34,111 @@ import java.util.Map;
  * Created by Rong on 2017/11/29.
  */
 public class MyHttpClient {
-    final static Logger LOG = LoggerFactory.getLogger(MyHttpClient.class);
+    private final static Logger LOG = LoggerFactory.getLogger(MyHttpClient.class);
 
     public static String httpGet(String url) {
-        HttpGet httpGet = new HttpGet(url);
+        HttpGet request = new HttpGet(url);
 
-        String body = "";
-        try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(httpGet)) {
+        StringBuilder htmlBuilder = new StringBuilder();
+        LOG.info("Executing request " + request + " via no proxy.");
+        try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(request)) {
+            LOG.info("----------------------------------------");
+            LOG.info("Response Status: " + String.valueOf(httpResponse.getStatusLine()));
             // 获取结果实体
             HttpEntity entity = httpResponse.getEntity();
-            if (entity != null) {
-                // 按指定编码转换结果实体为String类型
-                body = EntityUtils.toString(entity, "utf-8");
-            }
-            EntityUtils.consume(entity);
-        } catch (ClientProtocolException e) {
-            e.printStackTrace();
+            entityToString(entity, htmlBuilder);
         } catch (IOException e) {
+            LOG.error(e.getMessage());
             e.printStackTrace();
         }
 
-        return StringEscapeUtils.unescapeJava(body);
+        return StringEscapeUtils.unescapeJava(htmlBuilder.toString());
+    }
+
+    public static String httpGetWithProxy(String url, String proxyHost, int proxyPort, String proxyType) {
+        StringBuilder htmlBuilder = new StringBuilder();
+        HttpGet request = new HttpGet(url);
+
+        if ("SOCKS".equalsIgnoreCase(proxyType)) {
+            Registry<ConnectionSocketFactory> reg = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register("http", new MyConnectionSocketFactory())
+                    .register("https", new MySSLConnectionSocketFactory(SSLContexts.createSystemDefault())).build();
+            PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(reg, new FakeDnsResolver());
+            CloseableHttpClient httpclient = HttpClients.custom().setConnectionManager(cm).build();
+            try {
+                InetSocketAddress socksaddr = new InetSocketAddress(proxyHost, proxyPort);
+                HttpClientContext context = HttpClientContext.create();
+                context.setAttribute("socks.address", socksaddr);
+
+
+                LOG.info("Executing request " + request + " via SOCKS proxy " + socksaddr);
+                try (CloseableHttpResponse response = httpclient.execute(request, context)) {
+                    LOG.info("----------------------------------------");
+                    LOG.info("Response Status: " + String.valueOf(response.getStatusLine()));
+
+                    HttpEntity entity = response.getEntity();
+                    entityToString(entity, htmlBuilder);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } finally {
+                try {
+                    httpclient.close();
+                } catch (IOException e) {
+                    LOG.error(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        } else if ("HTTP".equalsIgnoreCase(proxyType)) {
+            HttpClientBuilder hcBuilder = HttpClients.custom();
+            HttpHost proxy = new HttpHost(proxyHost, proxyPort, "http");
+            DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+            hcBuilder.setRoutePlanner(routePlanner);
+            CloseableHttpClient httpClient = hcBuilder.build();
+            LOG.info("Executing request " + request + " via HTTP proxy " + proxy);
+
+            try {
+                HttpResponse httpResponse = httpClient.execute(request);
+                LOG.info("----------------------------------------");
+                LOG.info("Response Status: " + String.valueOf(httpResponse.getStatusLine()));
+
+                HttpEntity entity = httpResponse.getEntity();
+                entityToString(entity, htmlBuilder);
+            } catch (IOException e) {
+                LOG.error(e.getMessage());
+                e.printStackTrace();
+            } finally {
+                try {
+                    httpClient.close();
+                } catch (IOException e) {
+                    LOG.error(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            LOG.error("Unsupported proxy type: " + proxyType);
+            return null;
+        }
+
+        return htmlBuilder.toString();
+    }
+
+    private static void entityToString(HttpEntity entity, StringBuilder htmlBuilder) throws IOException {
+        if (entity != null) {
+            InputStream stream = entity.getContent();
+            BufferedReader in = new BufferedReader(new InputStreamReader(stream));
+            String readLine;
+            while ((readLine = in.readLine()) != null) {
+                htmlBuilder.append(readLine).append("\n");
+            }
+            EntityUtils.consume(entity);
+        }
     }
 
     public static String httpPost(String url, Map<String, String> map, String cookie) {
         HttpPost httpPost = new HttpPost(url);
 
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        List<NameValuePair> params = new ArrayList<>();
         if (map != null) {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 params.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
@@ -71,23 +158,19 @@ public class MyHttpClient {
         }
 
         // 执行post请求操作，并拿到结果
-        String body = "";
+        StringBuilder htmlBuilder = new StringBuilder();
         try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(httpPost)) {
             // 获取结果实体
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
-                // 按指定编码转换结果实体为String类型
-                body = EntityUtils.toString(entity, "utf-8");
+                entityToString(entity, htmlBuilder);
             }
-            // 消耗掉entity
-            EntityUtils.consume(entity);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (ParseException | IOException e) {
+            LOG.error(e.getMessage());
             e.printStackTrace();
         }
 
-        return StringEscapeUtils.unescapeJava(body);
+        return StringEscapeUtils.unescapeJava(htmlBuilder.toString());
     }
 
 

@@ -1,5 +1,6 @@
 package vip.fanrong.service;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jsoup.Jsoup;
@@ -8,6 +9,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import vip.fanrong.common.JsonUtil;
 import vip.fanrong.common.MyHttpClient;
 import vip.fanrong.mapper.ZmzResourceTopMapper;
 import vip.fanrong.model.ZmzResourceTop;
@@ -30,19 +32,29 @@ public class ZmzCrawlerService {
     @Autowired
     private ZmzResourceTopMapper zmzResourceTopMapper;
 
-    public void getZmzResouceTops() {
-        String html = MyHttpClient.httpGet("http://m.zimuzu.tv/resource/top");
-
-        Date getTime = new Date();
-
-        List<ZmzResourceTop> list = parseHtml(html, getTime);
-
-        int total = zmzResourceTopMapper.batchInsert(list);
-
-        String getTimeStr = ZonedDateTime.ofInstant(getTime.toInstant(), ZoneId.of("GMT+08:00")).format(FORMATTER_SIMPLE);
-
-        LOGGER.info("成功获取最新资源，数量：" + total + " 时间：" + getTimeStr);
+    public ObjectNode getZmzResourceTopsNode() {
+        List<ZmzResourceTop> list = getZmzResourceTops();
+        ObjectNode objectNode = JsonUtil.createObjectNode();
+        objectNode.put("count", list.size());
+        objectNode.putPOJO("resource", list);
+        return objectNode;
     }
+
+    public List<ZmzResourceTop> getZmzResourceTops() {
+        String html = MyHttpClient.httpGet("http://m.zimuzu.tv/resource/top");
+        Date getTime = new Date();
+        List<ZmzResourceTop> list = parseHtml(html, getTime);
+        String getTimeStr = ZonedDateTime.ofInstant(getTime.toInstant(), ZoneId.of("GMT+08:00")).format(FORMATTER_SIMPLE);
+        LOGGER.info("成功获取最新资源数量为：" + list.size() + " 获取时间：" + getTimeStr);
+        return list;
+    }
+
+    public int loadZmzResourceTops() {
+        List<ZmzResourceTop> list = getZmzResourceTops();
+        int loaded = zmzResourceTopMapper.batchInsert(list);
+        return loaded;
+    }
+
 
     private List<ZmzResourceTop> parseHtml(String html, Date getTime) {
 
