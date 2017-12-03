@@ -61,8 +61,4 @@ public class ClientUzumizCrawlerApplicationTests {
 		System.out.println(zmzResourceTopMapper.batchInsert(list));
 	}
 
-	@Test
-	public void testService(){
-		zmzCrawlerService.getZmzResouceTops();
-	}
 }

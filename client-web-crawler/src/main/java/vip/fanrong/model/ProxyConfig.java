@@ -5,6 +5,7 @@ import java.util.Date;
 public class ProxyConfig {
     private String host;
     private Integer port;
+    private String location;
     private String type;
     private String status;
     private Date statusUpdateTime;
@@ -24,6 +25,14 @@ public class ProxyConfig {
 
     public void setPort(Integer port) {
         this.port = port;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public String getType() {
@@ -56,5 +65,18 @@ public class ProxyConfig {
 
     public void setInsertTime(Date insertTime) {
         this.insertTime = insertTime;
+    }
+
+    @Override
+    public String toString() {
+        return "ProxyConfig{" +
+                "host='" + host + '\'' +
+                ", port=" + port +
+                ", location='" + location + '\'' +
+                ", type='" + type + '\'' +
+                ", status='" + status + '\'' +
+                ", statusUpdateTime=" + statusUpdateTime +
+                ", insertTime=" + insertTime +
+                '}';
     }
 }

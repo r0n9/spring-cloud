@@ -19,7 +19,7 @@ public class ScheduleConfiguration implements SchedulingConfigurer {
     @Override
     public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
         scheduledTaskRegistrar.addCronTask(() -> {
-            zmzCrawlerService.getZmzResouceTops();
+            zmzCrawlerService.loadZmzResourceTops();
         }, "0 0 6,18 * * ?");
     }
 }

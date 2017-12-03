@@ -87,4 +87,19 @@ public class ZmzResourceTop {
     public void setProcessTime(Date processTime) {
         this.processTime = processTime;
     }
+
+    @Override
+    public String toString() {
+        return "ZmzResourceTop{" +
+                "getTime=" + getTime +
+                ", count=" + count +
+                ", type='" + type + '\'' +
+                ", src='" + src + '\'' +
+                ", imgDataSrc='" + imgDataSrc + '\'' +
+                ", name='" + name + '\'' +
+                ", nameEn='" + nameEn + '\'' +
+                ", processed=" + processed +
+                ", processTime=" + processTime +
+                '}';
+    }
 }
