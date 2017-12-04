@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+import vip.fanrong.service.ProxyCrawlerService;
 import vip.fanrong.service.ZmzCrawlerService;
 
 /**
@@ -16,10 +17,18 @@ public class ScheduleConfiguration implements SchedulingConfigurer {
     @Autowired
     ZmzCrawlerService zmzCrawlerService;
 
+    @Autowired
+    ProxyCrawlerService proxyCrawlerService;
+
     @Override
     public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
         scheduledTaskRegistrar.addCronTask(() -> {
             zmzCrawlerService.loadZmzResourceTops();
         }, "0 0 6,18 * * ?");
+
+
+        scheduledTaskRegistrar.addCronTask(() -> {
+            proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(null, null);
+        }, "0 0 * * * ?");
     }
 }
