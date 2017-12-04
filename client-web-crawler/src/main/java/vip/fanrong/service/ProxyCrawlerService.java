@@ -35,7 +35,7 @@ public class ProxyCrawlerService {
         }
 
         String html = null;
-        if (proxyConfig == null) {
+        if (proxyConfig == null || proxyConfig.getHost() == null) {
             html = MyHttpClient.httpGet(url);
         } else {
             html = MyHttpClient.httpGetWithProxy(url, proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
