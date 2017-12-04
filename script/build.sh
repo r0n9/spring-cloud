@@ -5,23 +5,12 @@ base_path=$(cd `dirname $0`; cd ..; pwd)
 # maven build
 cd $base_path
 
-mvn clean package -DskipTests -Pprod
+scp client-web-crawler/target/*.jar rong@s4.fanrong.vip:/home/rong/cloud/client-web-crawler
+scp client-web-crawler/classes/application.properties rong@s4.fanrong.vip:/home/rong/cloud/client-web-crawler/config
 
+# 停止client-web-crawler
+ssh rong@s4.fanrong.vip 'ps -ef|grep java|grep rong|grep client-web-crawler|grep -v grep|cut -c 9-15|xargs kill -9'
 
-# stop services
-ps -ef|grep java|grep rong|grep cloud-eureka-server|grep -v grep|cut -c 9-15|xargs kill -9
-ps -ef|grep java|grep rong|grep cloud-api-gateway|grep -v grep|cut -c 9-15|xargs kill -9
-ps -ef|grep java|grep rong|grep client-kds-crawler|grep -v grep|cut -c 9-15|xargs kill -9
-ps -ef|grep java|grep rong|grep cloud-eureka-consumergrep -v grep|cut -c 9-15|xargs kill -9
-
-
-cd $base_path
-java -jar cloud-eureka-server/target/cloud-eureka-server-1.0-SNAPSHOT.jar >~/logs/cloud-eureka-server.out 2>&1
-sleep 1
-java -jar cloud-api-gateway/target/cloud-api-gateway-1.0-SNAPSHOT.jar >~/logs/cloud-api-gateway.out 2>&1
-sleep 1
-java -jar client-kds-crawler/target/client-kds-crawler-1.0-SNAPSHOT.jar >~/logs/client-kds-crawler.out 2>&1
-sleep 1
-java -jar cloud-eureka-consumer/target/cloud-eureka-consumer-1.0-SNAPSHOT.jar >~/logs/cloud-eureka-consumer.out 2>&1
-
+# 启动client-web-crawler
+ssh rong@s4.fanrong.vip 'cd /home/rong/cloud/client-web-crawler; nohup java -jar client-web-crawler-1.0-SNAPSHOT.jar > ~/logs/client-web-crawler.out 2>&1 &'
 
