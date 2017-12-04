@@ -19,7 +19,7 @@ public class ProxyCrawlerServiceTests {
 
 
     @Test
-    public void testgetSocksProxyConfigsFromGatherproxy() {
+    public void testGetSocksProxyConfigsFromGatherproxy() {
         List<ProxyConfig> list = proxyCrawlerService.getSocksProxyConfigsFromGatherproxy(null, "China");
         System.out.println(list.size());
         System.out.println(list.get(0));
@@ -29,5 +29,15 @@ public class ProxyCrawlerServiceTests {
         System.out.println(list.size());
         System.out.println(list.get(0));
 
+    }
+
+    @Test
+    public void testLoadSocksProxyConfigsFromGatherproxy() {
+        ProxyConfig proxyConfig = new ProxyConfig();
+        proxyConfig.setHost("177.33.208.3");
+        proxyConfig.setPort(14181);
+        proxyConfig.setType("SOCKS");
+        int loaded = proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(proxyConfig, null);
+        System.out.println(loaded);
     }
 }

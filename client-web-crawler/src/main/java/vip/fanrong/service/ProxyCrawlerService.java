@@ -1,12 +1,16 @@
 package vip.fanrong.service;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import vip.fanrong.common.JsonUtil;
 import vip.fanrong.common.MyHttpClient;
+import vip.fanrong.mapper.ProxyConfigMapper;
 import vip.fanrong.model.ProxyConfig;
 
 import java.util.ArrayList;
@@ -19,6 +23,9 @@ import java.util.regex.Pattern;
 public class ProxyCrawlerService {
 
     private static final Pattern GATHERPROXY_PATTERN = Pattern.compile("document.write\\('(.*)'\\)");
+
+    @Autowired
+    private ProxyConfigMapper proxyConfigMapper;
 
     public List<ProxyConfig> getSocksProxyConfigsFromGatherproxy(ProxyConfig proxyConfig, String byCountry) {
         String url = "http://www.gatherproxy.com/zh/sockslist";
@@ -59,5 +66,18 @@ public class ProxyCrawlerService {
 
     }
 
+    public int loadSocksProxyConfigsFromGatherproxy(ProxyConfig proxyConfig, String byCountry) {
+        List<ProxyConfig> list = getSocksProxyConfigsFromGatherproxy(proxyConfig, byCountry);
+        int loaded = proxyConfigMapper.batchInsert(list);
+        return loaded;
+    }
+
+    public ObjectNode getSocksProxyConfigsNodeFromGatherproxy(ProxyConfig proxyConfig, String byCountry) {
+        List<ProxyConfig> list = getSocksProxyConfigsFromGatherproxy(proxyConfig, byCountry);
+        ObjectNode objectNode = JsonUtil.createObjectNode();
+        objectNode.put("count", list.size());
+        objectNode.putPOJO("proxies", list);
+        return objectNode;
+    }
 
 }
