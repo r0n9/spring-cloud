@@ -21,13 +21,13 @@ public class ZmzCrawlerController {
 
     @ApiOperation(value = "Resource Tops", notes = "Resource Tops")
     @RequestMapping(value = "/resource/tops", method = RequestMethod.GET)
-    public ObjectNode getZmzResourceTops(@RequestParam(value = "limit", required = false, defaultValue = "10") int limit) {
+    public ObjectNode getZmzResourceTops() {
         return zmzCrawlerService.getZmzResourceTopsNode();
     }
 
     @ApiOperation(value = "Load Resource Tops", notes = "Load Resource Tops")
     @RequestMapping(value = "/resource/loadtops", method = RequestMethod.POST)
-    public ObjectNode loadZmzResourceTops(@RequestParam(value = "limit", required = false, defaultValue = "10") int limit) {
+    public ObjectNode loadZmzResourceTops() {
         int loaded = zmzCrawlerService.loadZmzResourceTops();
         ObjectNode node = JsonUtil.createObjectNode();
         return node.put("loaded", loaded);
