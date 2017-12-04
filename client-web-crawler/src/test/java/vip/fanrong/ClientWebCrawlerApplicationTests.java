@@ -16,7 +16,7 @@ import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class ClientUzumizCrawlerApplicationTests {
+public class ClientWebCrawlerApplicationTests {
 
 	@Autowired
 	private ZmzResourceTopMapper zmzResourceTopMapper;
