@@ -70,7 +70,7 @@ public class MyHttpClient {
                     int statusCode = response.getStatusLine().getStatusCode();
                     return statusCode;
                 } catch (IOException e) {
-                    return HttpStatus.SC_NOT_FOUND;
+                    return HttpStatus.SC_INTERNAL_SERVER_ERROR;
                 }
             } else if ("HTTP".equalsIgnoreCase(proxyType)) {
                 HttpClientBuilder hcBuilder = HttpClients.custom();
@@ -84,7 +84,7 @@ public class MyHttpClient {
                     int statusCode = httpResponse.getStatusLine().getStatusCode();
                     return statusCode;
                 } catch (IOException e) {
-                    return HttpStatus.SC_NOT_FOUND;
+                    return HttpStatus.SC_INTERNAL_SERVER_ERROR;
                 }
             }
         } finally {
@@ -97,7 +97,7 @@ public class MyHttpClient {
                 }
             }
         }
-        return HttpStatus.SC_NOT_FOUND;
+        return HttpStatus.SC_INTERNAL_SERVER_ERROR;
     }
 
     private static CloseableHttpClient getHttpClient() {

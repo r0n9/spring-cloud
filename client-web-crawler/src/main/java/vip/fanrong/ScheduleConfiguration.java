@@ -30,5 +30,9 @@ public class ScheduleConfiguration implements SchedulingConfigurer {
         scheduledTaskRegistrar.addCronTask(() -> {
             proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(null, null);
         }, "0 0 * * * ?");
+
+        scheduledTaskRegistrar.addCronTask(() -> {
+            proxyCrawlerService.validateProxy(40);
+        }, "0 30 * * * ?");
     }
 }

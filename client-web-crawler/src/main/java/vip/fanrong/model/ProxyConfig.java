@@ -3,6 +3,7 @@ package vip.fanrong.model;
 import java.util.Date;
 
 public class ProxyConfig {
+    private int id;
     private String host;
     private Integer port;
     private String location;
@@ -10,6 +11,14 @@ public class ProxyConfig {
     private String status;
     private Date statusUpdateTime;
     private Date insertTime;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getHost() {
         return host;

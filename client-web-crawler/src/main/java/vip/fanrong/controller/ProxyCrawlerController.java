@@ -34,5 +34,10 @@ public class ProxyCrawlerController {
         return node.put("loaded", loaded);
     }
 
+    @ApiOperation(value = "Validate Proxy", notes = "Validate Proxy")
+    @RequestMapping(value = "/validate", method = RequestMethod.GET)
+    public Integer validateProxy(@RequestParam(required = false, defaultValue = "10") int limit) {
+        return proxyCrawlerService.validateProxy(limit);
+    }
 
 }

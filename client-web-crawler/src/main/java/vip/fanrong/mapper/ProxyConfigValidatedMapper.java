@@ -11,23 +11,16 @@ import java.util.List;
  */
 @Mapper
 @Repository
-public interface ProxyConfigMapper {
+public interface ProxyConfigValidatedMapper {
 
-    @Insert("insert into proxy_config " +
+    @Insert("insert into proxy_config_validated " +
             "(host, port, location, type, status, statusUpdateTime, insertTime) " +
             "values " +
             "(#{host}, #{port}, #{location}, #{type}, #{status}, #{statusUpdateTime}, #{insertTime})")
     @Options(useGeneratedKeys = true)
     int insert(ProxyConfig proxyConfig); // 返回自增长id
 
-    @InsertProvider(type = ProxyConfigProvider.class, method = "batchInsert")
-    int batchInsert(@Param("proxyConfigList") List<ProxyConfig> proxyConfigList);
-
-    @Update("update proxy_config set host = #{host}, port = #{port}, location = #{location},  type = #{type}, " +
-            "status = #{status}, statusUpdateTime = #{statusUpdateTime}, insertTime = #{insertTime} where id = #{id}")
-    int update(ProxyConfig proxyConfig);
-
-    @Select("select * from proxy_config order by id desc limit #{limit};")
+    @Select("select * from proxy_config_validated where status = 200 order by id desc limit #{limit}")
     @Results({
             @Result(column = "id", property = "id"),
             @Result(column = "host", property = "host"),
@@ -38,7 +31,7 @@ public interface ProxyConfigMapper {
             @Result(column = "statusUpdateTime", property = "statusUpdateTime"),
             @Result(column = "insertTime", property = "insertTime")
     })
-    List<ProxyConfig> getProxyConfigsByLimit(@Param("limit") int limit);
+    List<ProxyConfig> getValidatedProxyConfigsByLimit(@Param("limit") int limit);
 
 
 }
