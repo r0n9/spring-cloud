@@ -55,16 +55,66 @@ public class MyHttpClient {
         return StringEscapeUtils.unescapeJava(htmlBuilder.toString());
     }
 
+    public static int testProxy(String proxyHost, int proxyPort, String proxyType) {
+        HttpGet request = new HttpGet("http://baidu.com/");
+        CloseableHttpClient httpclient = null;
+        try {
+            if ("SOCKS".equalsIgnoreCase(proxyType)) {
+                httpclient = getHttpClient();
+                InetSocketAddress socksaddr = new InetSocketAddress(proxyHost, proxyPort);
+                HttpClientContext context = HttpClientContext.create();
+                context.setAttribute("socks.address", socksaddr);
+
+                LOG.info("Executing request " + request + " via SOCKS proxy " + socksaddr);
+                try (CloseableHttpResponse response = httpclient.execute(request, context)) {
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    return statusCode;
+                } catch (IOException e) {
+                    return HttpStatus.SC_NOT_FOUND;
+                }
+            } else if ("HTTP".equalsIgnoreCase(proxyType)) {
+                HttpClientBuilder hcBuilder = HttpClients.custom();
+                HttpHost proxy = new HttpHost(proxyHost, proxyPort, "http");
+                DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+                hcBuilder.setRoutePlanner(routePlanner);
+                CloseableHttpClient httpClient = hcBuilder.build();
+                LOG.info("Executing request " + request + " via HTTP proxy " + proxy);
+
+                try (CloseableHttpResponse httpResponse = httpClient.execute(request)) {
+                    int statusCode = httpResponse.getStatusLine().getStatusCode();
+                    return statusCode;
+                } catch (IOException e) {
+                    return HttpStatus.SC_NOT_FOUND;
+                }
+            }
+        } finally {
+            if (httpclient != null) {
+                try {
+                    httpclient.close();
+                } catch (IOException e) {
+                    LOG.error(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+        return HttpStatus.SC_NOT_FOUND;
+    }
+
+    private static CloseableHttpClient getHttpClient() {
+        Registry<ConnectionSocketFactory> reg = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", new MyConnectionSocketFactory())
+                .register("https", new MySSLConnectionSocketFactory(SSLContexts.createSystemDefault())).build();
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(reg, new FakeDnsResolver());
+        CloseableHttpClient httpclient = HttpClients.custom().setConnectionManager(cm).build();
+        return httpclient;
+    }
+
     public static String httpGetWithProxy(String url, String proxyHost, int proxyPort, String proxyType) {
         StringBuilder htmlBuilder = new StringBuilder();
         HttpGet request = new HttpGet(url);
 
         if ("SOCKS".equalsIgnoreCase(proxyType)) {
-            Registry<ConnectionSocketFactory> reg = RegistryBuilder.<ConnectionSocketFactory>create()
-                    .register("http", new MyConnectionSocketFactory())
-                    .register("https", new MySSLConnectionSocketFactory(SSLContexts.createSystemDefault())).build();
-            PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(reg, new FakeDnsResolver());
-            CloseableHttpClient httpclient = HttpClients.custom().setConnectionManager(cm).build();
+            CloseableHttpClient httpclient = getHttpClient();
             try {
                 InetSocketAddress socksaddr = new InetSocketAddress(proxyHost, proxyPort);
                 HttpClientContext context = HttpClientContext.create();

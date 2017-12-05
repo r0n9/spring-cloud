@@ -40,4 +40,15 @@ public class ProxyCrawlerServiceTests {
         int loaded = proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(proxyConfig, null);
         System.out.println(loaded);
     }
+
+    @Test
+    public void testTestProxy() {
+        ProxyConfig proxyConfig = new ProxyConfig();
+        proxyConfig.setHost("177.195.60.15");
+        proxyConfig.setPort(32510);
+        proxyConfig.setType("SOCKS");
+        int status = proxyCrawlerService.testProxy(proxyConfig);
+
+        System.out.println(status);
+    }
 }

@@ -42,7 +42,7 @@ public class ZmzCrawlerService {
 
     public List<ZmzResourceTop> getZmzResourceTops() {
         String html = MyHttpClient.httpGet("http://m.zimuzu.tv/resource/top");
-        Date getTime = new Date();
+        Date getTime = Calendar.getInstance(Locale.CHINA).getTime();
         List<ZmzResourceTop> list = parseHtml(html, getTime);
         String getTimeStr = ZonedDateTime.ofInstant(getTime.toInstant(), ZoneId.of("GMT+08:00")).format(FORMATTER_SIMPLE);
         LOGGER.info("成功获取最新资源数量为：" + list.size() + " 获取时间：" + getTimeStr);

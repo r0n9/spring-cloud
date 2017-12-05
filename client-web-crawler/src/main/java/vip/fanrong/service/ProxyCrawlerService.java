@@ -13,9 +13,7 @@ import vip.fanrong.common.MyHttpClient;
 import vip.fanrong.mapper.ProxyConfigMapper;
 import vip.fanrong.model.ProxyConfig;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +24,12 @@ public class ProxyCrawlerService {
 
     @Autowired
     private ProxyConfigMapper proxyConfigMapper;
+
+    public Integer testProxy(ProxyConfig proxyConfig) {
+        int status = MyHttpClient.testProxy(proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
+        return status;
+    }
+
 
     public List<ProxyConfig> getSocksProxyConfigsFromGatherproxy(ProxyConfig proxyConfig, String byCountry) {
         String url = "http://www.gatherproxy.com/zh/sockslist";
@@ -58,7 +62,7 @@ public class ProxyCrawlerService {
             proxy.setPort(Integer.parseInt(m2.group(1)));
             proxy.setType("SOCKS");
             proxy.setLocation(tds.get(3).getElementsByTag("a").first().text());
-            proxy.setInsertTime(new Date());
+            proxy.setInsertTime(Calendar.getInstance(Locale.CHINA).getTime());
             results.add(proxy);
         }
 
