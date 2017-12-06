@@ -6,7 +6,10 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import vip.fanrong.common.JsonUtil;
+import vip.fanrong.model.ZmzResourceTop;
 import vip.fanrong.service.ZmzCrawlerService;
+
+import java.util.List;
 
 /**
  * Created by Rong on 2017/7/14.
@@ -22,7 +25,11 @@ public class ZmzCrawlerController {
     @ApiOperation(value = "Resource Tops", notes = "Resource Tops")
     @RequestMapping(value = "/resource/tops", method = RequestMethod.GET)
     public ObjectNode getZmzResourceTops() {
-        return zmzCrawlerService.getZmzResourceTopsNode();
+        List<ZmzResourceTop> list = zmzCrawlerService.getZmzResourceTops();
+        ObjectNode objectNode = JsonUtil.createObjectNode();
+        objectNode.put("count", list.size());
+        objectNode.putPOJO("resource", list);
+        return objectNode;
     }
 
     @ApiOperation(value = "Load Resource Tops", notes = "Load Resource Tops")

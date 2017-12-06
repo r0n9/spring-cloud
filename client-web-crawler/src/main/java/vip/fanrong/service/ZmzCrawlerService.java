@@ -32,14 +32,6 @@ public class ZmzCrawlerService {
     @Autowired
     private ZmzResourceTopMapper zmzResourceTopMapper;
 
-    public ObjectNode getZmzResourceTopsNode() {
-        List<ZmzResourceTop> list = getZmzResourceTops();
-        ObjectNode objectNode = JsonUtil.createObjectNode();
-        objectNode.put("count", list.size());
-        objectNode.putPOJO("resource", list);
-        return objectNode;
-    }
-
     public List<ZmzResourceTop> getZmzResourceTops() {
         String html = MyHttpClient.httpGet("http://m.zimuzu.tv/resource/top");
         Date getTime = Calendar.getInstance(Locale.CHINA).getTime();

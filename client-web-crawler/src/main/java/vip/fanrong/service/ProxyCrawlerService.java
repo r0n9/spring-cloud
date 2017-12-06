@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sun.net.www.http.HttpClient;
 import vip.fanrong.common.JsonUtil;
 import vip.fanrong.common.MyHttpClient;
 import vip.fanrong.mapper.ProxyConfigMapper;
@@ -40,6 +41,17 @@ public class ProxyCrawlerService {
     public Integer testProxy(ProxyConfig proxyConfig) {
         int status = MyHttpClient.testProxy(proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
         return status;
+    }
+
+    public ProxyConfig getRandomValidatedProxy() {
+        List<ProxyConfig> list = proxyConfigValidatedMapper.getValidatedProxyConfigsByLimit(50);
+        Random rand = new Random(System.currentTimeMillis());
+        int index = rand.nextInt(list.size());
+        return list.get(index);
+    }
+
+    public String getProxyInfo(ProxyConfig proxyConfig) {
+        return MyHttpClient.httpGetWithProxy("http://ip.chinaz.com/getip.aspx", proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
     }
 
     public Integer validateProxy(int limit) {
@@ -136,14 +148,6 @@ public class ProxyCrawlerService {
         List<ProxyConfig> list = getSocksProxyConfigsFromGatherproxy(proxyConfig, byCountry);
         int loaded = proxyConfigMapper.batchInsert(list);
         return loaded;
-    }
-
-    public ObjectNode getSocksProxyConfigsNodeFromGatherproxy(ProxyConfig proxyConfig, String byCountry) {
-        List<ProxyConfig> list = getSocksProxyConfigsFromGatherproxy(proxyConfig, byCountry);
-        ObjectNode objectNode = JsonUtil.createObjectNode();
-        objectNode.put("count", list.size());
-        objectNode.putPOJO("proxies", list);
-        return objectNode;
     }
 
 }
