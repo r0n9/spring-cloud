@@ -207,5 +207,9 @@ public class ProxyCrawlerService {
 
     }
 
-
+    public int loadProxyCongigsFromXicidaili(ProxyConfig proxyConfig) {
+        List<ProxyConfig> list = getProxyConfigsFromXicidaili(proxyConfig);
+        int loaded = proxyConfigMapper.batchInsert(list);
+        return loaded;
+    }
 }
