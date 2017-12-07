@@ -36,9 +36,11 @@ import java.util.Map;
 public class MyHttpClient {
     private final static Logger LOG = LoggerFactory.getLogger(MyHttpClient.class);
 
+    private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0";
+
     public static String httpGet(String url) {
         HttpGet request = new HttpGet(url);
-        request.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0"); // 设置请求头消息User-Agent
+        request.setHeader("User-Agent", USER_AGENT);
 
         StringBuilder htmlBuilder = new StringBuilder();
         LOG.info("Executing request " + request + " via no proxy.");
@@ -58,6 +60,7 @@ public class MyHttpClient {
 
     public static int testProxy(String proxyHost, int proxyPort, String proxyType) {
         HttpGet request = new HttpGet("http://baidu.com/");
+        request.setHeader("User-Agent", USER_AGENT); // 设置请求头消息User-Agent
         CloseableHttpClient httpclient = null;
         try {
             if ("SOCKS".equalsIgnoreCase(proxyType)) {
@@ -113,6 +116,7 @@ public class MyHttpClient {
     public static String httpGetWithProxy(String url, String proxyHost, int proxyPort, String proxyType) {
         StringBuilder htmlBuilder = new StringBuilder();
         HttpGet request = new HttpGet(url);
+        request.setHeader("User-Agent", USER_AGENT); // 设置请求头消息User-Agent
 
         if ("SOCKS".equalsIgnoreCase(proxyType)) {
             CloseableHttpClient httpclient = getHttpClient();
@@ -200,7 +204,7 @@ public class MyHttpClient {
             httpPost.setEntity(new UrlEncodedFormEntity(params, "utf-8"));
             // 设置header信息
             httpPost.setHeader("Content-type", "application/x-www-form-urlencoded");
-            httpPost.setHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
+            httpPost.setHeader("User-Agent", USER_AGENT);
             // 添加cookie到头文件
             httpPost.addHeader("Cookie", cookie);
         } catch (UnsupportedEncodingException e) {

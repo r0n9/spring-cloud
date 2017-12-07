@@ -162,6 +162,9 @@ public class ProxyCrawlerService {
 
     public int loadSocksProxyConfigsFromGatherproxy(ProxyConfig proxyConfig, String byCountry) {
         List<ProxyConfig> list = getSocksProxyConfigsFromGatherproxy(proxyConfig, byCountry);
+        if (list == null || list.isEmpty()) {
+            return 0;
+        }
         int loaded = proxyConfigMapper.batchInsert(list);
         return loaded;
     }
@@ -207,8 +210,11 @@ public class ProxyCrawlerService {
 
     }
 
-    public int loadProxyCongigsFromXicidaili(ProxyConfig proxyConfig) {
+    public int loadProxyConfigsFromXicidaili(ProxyConfig proxyConfig) {
         List<ProxyConfig> list = getProxyConfigsFromXicidaili(proxyConfig);
+        if (list == null || list.isEmpty()) {
+            return 0;
+        }
         int loaded = proxyConfigMapper.batchInsert(list);
         return loaded;
     }

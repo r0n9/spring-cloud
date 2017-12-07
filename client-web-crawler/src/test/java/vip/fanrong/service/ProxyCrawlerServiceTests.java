@@ -54,7 +54,7 @@ public class ProxyCrawlerServiceTests {
 
     @Test
     public void testGetProxyFromXicidaili() {
-        List<ProxyConfig> list = proxyCrawlerService.getProxyConfigsFromXicidaili(null);
+        List<ProxyConfig> list = proxyCrawlerService.getProxyConfigsFromXicidaili(proxyCrawlerService.getRandomValidatedProxy());
         for (int i = 0; i < list.size(); i++) {
             System.out.println(list.get(i));
         }
