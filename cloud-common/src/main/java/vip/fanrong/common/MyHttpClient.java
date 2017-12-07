@@ -38,6 +38,7 @@ public class MyHttpClient {
 
     public static String httpGet(String url) {
         HttpGet request = new HttpGet(url);
+        request.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0"); // 设置请求头消息User-Agent
 
         StringBuilder htmlBuilder = new StringBuilder();
         LOG.info("Executing request " + request + " via no proxy.");
