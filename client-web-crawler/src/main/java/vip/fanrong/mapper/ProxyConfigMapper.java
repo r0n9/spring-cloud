@@ -27,7 +27,7 @@ public interface ProxyConfigMapper {
             "status = #{status}, statusUpdateTime = #{statusUpdateTime}, insertTime = #{insertTime} where id = #{id}")
     int update(ProxyConfig proxyConfig);
 
-    @Select("select * from proxy_config order by id desc limit #{limit};")
+    @Select("select * from proxy_config where status is null order by id desc limit #{limit};")
     @Results({
             @Result(column = "id", property = "id"),
             @Result(column = "host", property = "host"),

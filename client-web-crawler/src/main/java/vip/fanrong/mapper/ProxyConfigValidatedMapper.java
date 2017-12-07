@@ -33,5 +33,6 @@ public interface ProxyConfigValidatedMapper {
     })
     List<ProxyConfig> getValidatedProxyConfigsByLimit(@Param("limit") int limit);
 
-
+    @Delete("delete from proxy_config_validated where id = #{id}")
+    int delete(@Param("id") int id);
 }

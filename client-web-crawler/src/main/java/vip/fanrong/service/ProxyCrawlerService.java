@@ -45,9 +45,25 @@ public class ProxyCrawlerService {
 
     public ProxyConfig getRandomValidatedProxy() {
         List<ProxyConfig> list = proxyConfigValidatedMapper.getValidatedProxyConfigsByLimit(50);
+        return getRandomValidatedProxy(list);
+    }
+
+    private ProxyConfig getRandomValidatedProxy(List<ProxyConfig> list) {
+        if (list == null || list.isEmpty()) {
+            LOG.warn("No validated proxy!!!!!");
+            return null;
+        }
         Random rand = new Random(System.currentTimeMillis());
         int index = rand.nextInt(list.size());
-        return list.get(index);
+        ProxyConfig proxy = list.get(index);
+        if (HttpStatus.SC_OK == testProxy(proxy)) {
+            return proxy;
+        } else {
+            list.remove(index);
+            proxyConfigValidatedMapper.delete(proxy.getId());
+            LOG.info("Proxy removed: " + proxy);
+            return getRandomValidatedProxy(list);
+        }
     }
 
     public String getProxyInfo(ProxyConfig proxyConfig) {
@@ -149,5 +165,47 @@ public class ProxyCrawlerService {
         int loaded = proxyConfigMapper.batchInsert(list);
         return loaded;
     }
+
+    public List<ProxyConfig> getProxyConfigsFromXicidaili(ProxyConfig proxyConfig) {
+        String url = "http://www.xicidaili.com";
+
+        String html = null;
+        if (proxyConfig == null || proxyConfig.getHost() == null) {
+            html = MyHttpClient.httpGet(url);
+        } else {
+            html = MyHttpClient.httpGetWithProxy(url, proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
+        }
+
+        Document doc = Jsoup.parse(html);
+        Elements trs = doc.getElementsByTag("tr");
+        List<ProxyConfig> results = new ArrayList<>();
+        for (Element tr : trs) {
+            Elements tds = tr.getElementsByTag("td");
+            if (tds == null || tds.size() != 8) {
+                continue;
+            }
+            ProxyConfig proxy = new ProxyConfig();
+
+            proxy.setHost(tds.get(1).text());
+            proxy.setPort(Integer.parseInt(tds.get(2).text()));
+            String type = tds.get(5).text();
+            if (StringUtils.containsIgnoreCase(type, "socks")) {
+                type = "SOCKS";
+            } else if (StringUtils.containsIgnoreCase(type, "http")) {
+                type = "HTTP";
+            } else {
+                LOG.warn("Unknown proxy type: [" + type + "] from " + url);
+                continue;
+            }
+            proxy.setType(type);
+            proxy.setLocation(tds.get(3).text());
+            proxy.setInsertTime(Calendar.getInstance(Locale.CHINA).getTime());
+            results.add(proxy);
+        }
+
+        return results;
+
+    }
+
 
 }

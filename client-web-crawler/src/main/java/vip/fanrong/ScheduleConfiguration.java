@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+import vip.fanrong.model.ProxyConfig;
 import vip.fanrong.service.ProxyCrawlerService;
 import vip.fanrong.service.ZmzCrawlerService;
 
@@ -28,11 +29,19 @@ public class ScheduleConfiguration implements SchedulingConfigurer {
 
 
         scheduledTaskRegistrar.addCronTask(() -> {
-            proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(null, null);
+            ProxyConfig proxy = proxyCrawlerService.getRandomValidatedProxy();
+            proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(proxy, null);
         }, "0 0 * * * ?");
 
+
         scheduledTaskRegistrar.addCronTask(() -> {
-            proxyCrawlerService.validateProxy(40);
+            ProxyConfig proxy = proxyCrawlerService.getRandomValidatedProxy();
+            proxyCrawlerService.getProxyConfigsFromXicidaili(proxy);
+        }, "0 15 * * * ?");
+
+        scheduledTaskRegistrar.addCronTask(() -> {
+            proxyCrawlerService.validateProxy(50);
         }, "0 30 * * * ?");
     }
+
 }

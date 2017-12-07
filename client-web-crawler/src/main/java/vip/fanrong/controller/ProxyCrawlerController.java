@@ -51,10 +51,8 @@ public class ProxyCrawlerController {
     @RequestMapping(value = "/random", method = RequestMethod.GET)
     public ObjectNode getRandomProxy() {
         ProxyConfig proxyConfig = proxyCrawlerService.getRandomValidatedProxy();
-        String info = proxyCrawlerService.getProxyInfo(proxyConfig);
         ObjectNode objectNode = JsonUtil.createObjectNode();
         objectNode.putPOJO("proxy", proxyConfig);
-        objectNode.put("info", info);
         return objectNode;
     }
 
