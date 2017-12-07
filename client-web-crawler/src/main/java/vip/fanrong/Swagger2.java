@@ -29,8 +29,8 @@ public class Swagger2 {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("uzumiz爬取API")
-                .description("uzumiz爬取API")
+                .title("爬虫接口")
+                .description("让互联网成为你的私人数据库^^")
                 .termsOfServiceUrl("")
                 .contact("fanrong330@gmail.com")
                 .version("1.0")

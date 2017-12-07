@@ -16,10 +16,10 @@ import vip.fanrong.service.ZmzCrawlerService;
 @EnableScheduling
 public class ScheduleConfiguration implements SchedulingConfigurer {
     @Autowired
-    ZmzCrawlerService zmzCrawlerService;
+    private ZmzCrawlerService zmzCrawlerService;
 
     @Autowired
-    ProxyCrawlerService proxyCrawlerService;
+    private ProxyCrawlerService proxyCrawlerService;
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
