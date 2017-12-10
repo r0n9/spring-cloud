@@ -11,6 +11,7 @@ import vip.fanrong.common.MyHttpClient;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -88,6 +89,55 @@ public class Test {
     }
 
     public static void main(String[] args) {
-        getProxcy();
+        // zmz 登陆
+//        String url = "http://www.zimuzu.tv/User/Login/ajaxLogin";
+//
+//        Map<String, String> params = new HashMap<>();
+//        params.put("account", "dexter_morgan");
+//        params.put("password", "fr330zimuzu");
+//        params.put("remember", "1");
+//        params.put("url_back", "http%3A%2F%2Fwww.zimuzu.tv%2Fresource%2F10733");
+//
+//        String html = MyHttpClient.httpPost(url, params, null);
+//
+//        System.out.println(html);
+
+
+        // zmz 注册
+//        String url = "http://www.zimuzu.tv/user/reg"; // 初始页面
+//        String html = MyHttpClient.httpGet(url);
+//
+//        Document doc = Jsoup.parse(html);
+//        Elements inputs = doc.getElementsByTag("input");
+//        Element hashInput = null;
+//        for (Element element : inputs) {
+//            if ("__hash__".equalsIgnoreCase(element.attr("name"))) {
+//                hashInput = element;
+//                break;
+//            }
+//        }
+//        String hashCode = hashInput.attr("value");
+//        System.out.println("hash: " + hashCode);
+//
+//
+//        String regUrl = "http://www.zimuzu.tv/User/Reg/saveReg";
+//        Map<String, String> requestBody = new HashMap<>();
+//        requestBody.put("email", "123241153@qq.com");
+//        requestBody.put("nickname", "nissasad1");
+//        requestBody.put("password", "12345678");
+//        requestBody.put("repassword", "12345678");
+//        requestBody.put("sex", "1");
+//        requestBody.put("__hash__", hashCode);
+//
+//        String result = MyHttpClient.httpPost(regUrl, requestBody, null);
+//
+//        result = Jsoup.parse(result).getElementById("tipsMsg").getElementsByTag("a").first().text();
+//
+//        System.out.println(result);
+
+        System.out.println(UUID.randomUUID().toString().substring(0, 13)); // passwrod
+
+        System.out.println(UUID.randomUUID().toString().substring(24)); // passwrod
+        System.out.print(System.currentTimeMillis()/13);
     }
 }

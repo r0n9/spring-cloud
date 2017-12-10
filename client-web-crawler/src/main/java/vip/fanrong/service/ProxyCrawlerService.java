@@ -1,6 +1,5 @@
 package vip.fanrong.service;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.jsoup.Jsoup;
@@ -11,14 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import sun.net.www.http.HttpClient;
-import vip.fanrong.common.JsonUtil;
 import vip.fanrong.common.MyHttpClient;
 import vip.fanrong.mapper.ProxyConfigMapper;
 import vip.fanrong.mapper.ProxyConfigValidatedMapper;
 import vip.fanrong.model.ProxyConfig;
 
-import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;

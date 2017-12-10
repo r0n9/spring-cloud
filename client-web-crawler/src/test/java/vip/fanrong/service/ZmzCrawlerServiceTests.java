@@ -16,10 +16,23 @@ public class ZmzCrawlerServiceTests {
     @Autowired
     private ZmzCrawlerService zmzCrawlerService;
 
+    @Autowired
+    ProxyCrawlerService proxyCrawlerService;
+
 
     @Test
-    public void testService() {
+    public void testGetZmzResourceTops() {
         List<ZmzResourceTop> list = zmzCrawlerService.getZmzResourceTops();
         System.out.println(list);
+    }
+
+    @Test
+    public void testGetResourceById() {
+        zmzCrawlerService.getMovieResourceByZmzResourceId(null, "35726");
+    }
+
+    @Test
+    public void testRegister() {
+        zmzCrawlerService.registerZmzAccountRandom(proxyCrawlerService.getRandomValidatedProxy());
     }
 }

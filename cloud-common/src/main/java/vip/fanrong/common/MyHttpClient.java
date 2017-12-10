@@ -178,6 +178,84 @@ public class MyHttpClient {
         return htmlBuilder.toString();
     }
 
+    public static String httpPostWithProxy(String url, Map<String, String> map, String cookie, String proxyHost, int proxyPort, String proxyType) {
+        List<NameValuePair> params = new ArrayList<>();
+        if (map != null) {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                params.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+            }
+        }
+
+        StringBuilder htmlBuilder = new StringBuilder();
+        HttpPost request = new HttpPost(url);
+        request.setHeader("User-Agent", USER_AGENT); // 设置请求头消息User-Agent
+        try {
+            request.setEntity(new UrlEncodedFormEntity(params, "utf-8"));
+        } catch (UnsupportedEncodingException e) {
+            LOG.error(e.getMessage());
+            e.printStackTrace();
+        }
+
+        if ("SOCKS".equalsIgnoreCase(proxyType)) {
+            CloseableHttpClient httpclient = getHttpClient();
+            try {
+                InetSocketAddress socksaddr = new InetSocketAddress(proxyHost, proxyPort);
+                HttpClientContext context = HttpClientContext.create();
+                context.setAttribute("socks.address", socksaddr);
+
+
+                LOG.info("Executing request " + request + " via SOCKS proxy " + socksaddr);
+                try (CloseableHttpResponse response = httpclient.execute(request, context)) {
+                    LOG.info("----------------------------------------");
+                    LOG.info("Response Status: " + String.valueOf(response.getStatusLine()));
+
+                    HttpEntity entity = response.getEntity();
+                    entityToString(entity, htmlBuilder);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } finally {
+                try {
+                    httpclient.close();
+                } catch (IOException e) {
+                    LOG.error(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        } else if ("HTTP".equalsIgnoreCase(proxyType)) {
+            HttpClientBuilder hcBuilder = HttpClients.custom();
+            HttpHost proxy = new HttpHost(proxyHost, proxyPort, "http");
+            DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+            hcBuilder.setRoutePlanner(routePlanner);
+            CloseableHttpClient httpClient = hcBuilder.build();
+            LOG.info("Executing request " + request + " via HTTP proxy " + proxy);
+
+            try {
+                HttpResponse httpResponse = httpClient.execute(request);
+                LOG.info("----------------------------------------");
+                LOG.info("Response Status: " + String.valueOf(httpResponse.getStatusLine()));
+
+                HttpEntity entity = httpResponse.getEntity();
+                entityToString(entity, htmlBuilder);
+            } catch (IOException e) {
+                LOG.error(e.getMessage());
+                e.printStackTrace();
+            } finally {
+                try {
+                    httpClient.close();
+                } catch (IOException e) {
+                    LOG.error(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            LOG.error("Unsupported proxy type: " + proxyType);
+            return null;
+        }
+
+        return htmlBuilder.toString();
+    }
+
     private static void entityToString(HttpEntity entity, StringBuilder htmlBuilder) throws IOException {
         if (entity != null) {
             InputStream stream = entity.getContent();
