@@ -19,7 +19,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/crawler/zmz") // parent folder for request mapping path
-@Api(value = "Web Crawler API", description = "v1")
+@Api(value = "Zmz Crawler API", description = "v1")
 public class ZmzCrawlerController {
 
     @Autowired

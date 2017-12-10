@@ -137,6 +137,7 @@ public class ZmzCrawlerService {
         zmzAccount.setEmail(String.valueOf(System.currentTimeMillis() / 13) + "@qq.com");
         zmzAccount.setNickname(uuid.substring(0, 13));
         zmzAccount.setPassword(uuid.substring(24));
+        zmzAccount.setSex("1");
         return registerZmzAccount(proxy, zmzAccount);
     }
 
