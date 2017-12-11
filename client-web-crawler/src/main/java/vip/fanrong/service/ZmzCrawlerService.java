@@ -3,6 +3,7 @@ package vip.fanrong.service;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.client.methods.HttpPost;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -10,6 +11,7 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import vip.fanrong.common.MyHttpClient;
+import vip.fanrong.common.MyHttpResponse;
 import vip.fanrong.mapper.ZmzAccountMapper;
 import vip.fanrong.mapper.ZmzResourceTopMapper;
 import vip.fanrong.model.MovieResource;
@@ -21,6 +23,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,6 +44,9 @@ public class ZmzCrawlerService {
 
     @Autowired
     private ZmzAccountMapper zmzAccountMapper;
+
+    @Autowired
+    private ProxyCrawlerService proxyCrawlerService;
 
     public List<ZmzResourceTop> getZmzResourceTops() {
         String html = MyHttpClient.httpGet("http://m.zimuzu.tv/resource/top");
@@ -134,10 +140,12 @@ public class ZmzCrawlerService {
     public ZmzAccount registerZmzAccountRandom(ProxyConfig proxy) {
         String uuid = UUID.randomUUID().toString();
         ZmzAccount zmzAccount = new ZmzAccount();
-        zmzAccount.setEmail(String.valueOf(System.currentTimeMillis() / 13) + "@qq.com");
+        Random random = new Random();
+        int randomInt = (random.nextInt(3) + 1) + 10;
+        zmzAccount.setEmail(String.valueOf(System.currentTimeMillis() / randomInt / 10) + "@qq.com");
         zmzAccount.setNickname(uuid.substring(0, 13));
         zmzAccount.setPassword(uuid.substring(24));
-        zmzAccount.setSex("1");
+        zmzAccount.setSex(String.valueOf(random.nextInt(2) + 1));
         return registerZmzAccount(proxy, zmzAccount);
     }
 
@@ -180,6 +188,10 @@ public class ZmzCrawlerService {
             result = MyHttpClient.httpPostWithProxy(regUrl, requestBody, null, proxy.getHost(), proxy.getPort(), proxy.getType());
         }
 
+        if (null == result) {
+            return null;
+        }
+
         result = Jsoup.parse(result).getElementById("tipsMsg").getElementsByTag("a").first().text();
         LOGGER.info(result);
         boolean isSuccess = StringUtils.contains(result, "注册成功");
@@ -195,5 +207,112 @@ public class ZmzCrawlerService {
         return zmzAccount;
     }
 
+    public MyHttpResponse zmzAccountLogin(ProxyConfig proxy, ZmzAccount account) {
+        String url = "http://www.zimuzu.tv/User/Login/ajaxLogin";
+
+        Map<String, String> params = new HashMap<>();
+        params.put("account", account.getNickname());
+        params.put("password", account.getPassword());
+        params.put("remember", "1");
+        params.put("url_back", "http://www.zimuzu.tv/user/login");
+
+        MyHttpResponse response;
+
+        if (proxy == null) {
+            response = MyHttpClient.getHttpResponse(new HttpPost(url), params, "");
+        } else {
+            response = MyHttpClient.getHttpResponse(new HttpPost(url), params, "", proxy.getHost(), proxy.getPort(), proxy.getType());
+        }
+
+        return response;
+    }
+
+    public void zmzAccountLoginAll() {
+        LOGGER.info("Zmz accounts login is start...");
+
+        List<ZmzAccount> accounts = zmzAccountMapper.getZmzAccountAll();
+        LOGGER.info("Total size = " + accounts.size());
+
+
+        ZmzAccount firstAccount = accounts.get(0);
+        ProxyConfig proxy = proxyCrawlerService.getRandomValidatedProxy();
+        while (!zmzAccountLogin(firstAccount, proxy)) {
+            proxy = proxyCrawlerService.getRandomValidatedProxy();
+        }
+
+        LOGGER.info("Proxy found: " + proxy);
+        ExecutorService service = Executors.newFixedThreadPool(10);
+        List<FutureTask<Boolean>> tasks = new ArrayList<>();
+        for (int i = 1; i < accounts.size(); i++) {
+            FutureTask<Boolean> task = new FutureTask<>(new ZmzAccountLoginCaller(proxy, accounts.get(i)));
+            service.submit(task);
+            tasks.add(task);
+        }
+
+        for (FutureTask<Boolean> task : tasks) {
+            try {
+                boolean result = task.get(90, TimeUnit.MINUTES);
+                if (result) {
+                    LOGGER.error("Login task not success.");
+                }
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                LOGGER.error("Exception for login task: " + task);
+                LOGGER.error(e);
+            }
+        }
+
+        service.shutdown();
+
+        LOGGER.info("Zmz accounts login is end...");
+
+    }
+
+    class ZmzAccountLoginCaller implements Callable<Boolean> {
+        private ProxyConfig proxy;
+        private ZmzAccount account;
+
+        ZmzAccountLoginCaller(ProxyConfig proxy, ZmzAccount account) {
+            this.proxy = proxy;
+            this.account = account;
+        }
+
+        @Override
+        public Boolean call() throws Exception {
+            MyHttpResponse response = zmzAccountLogin(proxy, account);
+            if (response != null && response.getHtml() != null) {
+                if (StringUtils.contains(response.getHtml(), "登录成功")) {
+                    LOGGER.info("Login succeeded for account: " + account);
+                    account.setLastLoginDate(Calendar.getInstance(Locale.CHINA).getTime());
+                    zmzAccountMapper.update(account);
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    private boolean zmzAccountLogin(ZmzAccount account, ProxyConfig proxy) {
+        ExecutorService service = null;
+        try {
+            service = Executors.newSingleThreadExecutor();
+            FutureTask<Boolean> task = new FutureTask<>(new ZmzAccountLoginCaller(proxy, account));
+            service.submit(task);
+
+            try {
+                return task.get(90, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                return false;
+            } catch (ExecutionException e) {
+                return false;
+            } catch (TimeoutException e) {
+                LOGGER.warn("Timeout for proxy: " + proxy);
+                return false;
+            }
+        } finally {
+            if (null != service) {
+                service.shutdown();
+            }
+        }
+    }
 
 }

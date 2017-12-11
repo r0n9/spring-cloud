@@ -33,6 +33,13 @@ public class ZmzCrawlerServiceTests {
 
     @Test
     public void testRegister() {
-        zmzCrawlerService.registerZmzAccountRandom(proxyCrawlerService.getRandomValidatedProxy());
+        for (int i = 0; i < 10; i++) {
+            zmzCrawlerService.registerZmzAccountRandom(null);
+        }
+    }
+
+    @Test
+    public void testLoginAll() {
+        zmzCrawlerService.zmzAccountLoginAll();
     }
 }

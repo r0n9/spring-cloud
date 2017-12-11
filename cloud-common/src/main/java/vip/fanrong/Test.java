@@ -1,6 +1,9 @@
 package vip.fanrong;
 
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -8,7 +11,9 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vip.fanrong.common.MyHttpClient;
+import vip.fanrong.common.MyHttpResponse;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -90,17 +95,20 @@ public class Test {
 
     public static void main(String[] args) {
         // zmz 登陆
-//        String url = "http://www.zimuzu.tv/User/Login/ajaxLogin";
-//
-//        Map<String, String> params = new HashMap<>();
-//        params.put("account", "dexter_morgan");
-//        params.put("password", "fr330zimuzu");
-//        params.put("remember", "1");
-//        params.put("url_back", "http%3A%2F%2Fwww.zimuzu.tv%2Fresource%2F10733");
-//
-//        String html = MyHttpClient.httpPost(url, params, null);
-//
-//        System.out.println(html);
+        String url = "http://www.zimuzu.tv/User/Login/ajaxLogin";
+
+        Map<String, String> params = new HashMap<>();
+        params.put("account", "da6528ad-321b");
+        params.put("password", "eec746d53b33");
+        params.put("remember", "1");
+        params.put("url_back", "http://www.zimuzu.tv/user/login");
+
+        MyHttpResponse response = MyHttpClient.getHttpResponse(new HttpPost(url), params, null);
+
+        for (Header header : response.getHeaders()) {
+            System.out.println(header);
+        }
+        System.out.println(response.getHtml());
 
 
         // zmz 注册
@@ -138,6 +146,6 @@ public class Test {
         System.out.println(UUID.randomUUID().toString().substring(0, 13)); // passwrod
 
         System.out.println(UUID.randomUUID().toString().substring(24)); // passwrod
-        System.out.print(System.currentTimeMillis()/13);
+        System.out.print(System.currentTimeMillis() / 13);
     }
 }

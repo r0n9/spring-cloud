@@ -87,7 +87,12 @@ public class ProxyCrawlerService {
                 continue;
             }
 
-            FutureTask<Integer> future = new FutureTask<>(() -> testProxy(pc));
+            FutureTask<Integer> future = new FutureTask<>(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return ProxyCrawlerService.this.testProxy(pc);
+                }
+            });
             executorService.execute(future);
             int statusCode;
             try {

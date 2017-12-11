@@ -75,4 +75,17 @@ public class ZmzAccount {
     public void setIsValide(int isValide) {
         this.isValide = isValide;
     }
+
+    @Override
+    public String toString() {
+        return "ZmzAccount{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", nickname='" + nickname + '\'' +
+                ", sex='" + sex + '\'' +
+                ", lastLoginDate=" + lastLoginDate +
+                ", registerDate=" + registerDate +
+                ", isValide=" + isValide +
+                '}';
+    }
 }

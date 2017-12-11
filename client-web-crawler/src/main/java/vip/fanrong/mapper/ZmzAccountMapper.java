@@ -2,7 +2,6 @@ package vip.fanrong.mapper;
 
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
-import vip.fanrong.model.ProxyConfig;
 import vip.fanrong.model.ZmzAccount;
 
 import java.util.List;
@@ -25,11 +24,15 @@ public interface ZmzAccountMapper {
             @Result(column = "nickname", property = "nickname"),
             @Result(column = "password", property = "password"),
             @Result(column = "sex", property = "sex"),
-            @Result(column = "sex", property = "lastLoginDate"),
+            @Result(column = "lastlogindate", property = "lastLoginDate"),
             @Result(column = "registerdate", property = "registerDate"),
             @Result(column = "isvalid", property = "isValide")
     })
     List<ZmzAccount> getZmzAccountAll();
-    
+
+    @Update("update zmz_account set email = #{email}, nickname = #{nickname}, password = #{password},  sex = #{sex}, " +
+            "lastlogindate = #{lastLoginDate}, registerdate = #{registerDate}, isvalid = #{isValide} where id = #{id}")
+    int update(ZmzAccount zmzAccount);
+
 
 }

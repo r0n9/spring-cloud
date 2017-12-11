@@ -6,6 +6,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -293,6 +294,7 @@ public class MyHttpClient {
         // 执行post请求操作，并拿到结果
         StringBuilder htmlBuilder = new StringBuilder();
         try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(httpPost)) {
+
             // 获取结果实体
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
@@ -306,5 +308,132 @@ public class MyHttpClient {
         return StringEscapeUtils.unescapeJava(htmlBuilder.toString());
     }
 
+    private static String getHtmlFromResponse(HttpResponse httpResponse) throws IOException {
+        if (httpResponse == null || httpResponse.getEntity() == null) {
+            return null;
+        }
+        StringBuilder htmlBuilder = new StringBuilder();
+        entityToString(httpResponse.getEntity(), htmlBuilder);
+        return StringEscapeUtils.unescapeJava(htmlBuilder.toString());
+    }
+
+
+    public static MyHttpResponse getHttpResponse(HttpRequestBase request,
+                                                 Map<String, String> map,
+                                                 String cookie) {
+        setRequest(request, map, cookie);
+
+        // 执行post请求操作，并拿到结果
+        StringBuilder htmlBuilder = new StringBuilder();
+        LOG.info("Executing request " + request + " via no proxy ");
+        try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(request)) {
+            LOG.info("----------------------------------------");
+            LOG.info("Response Status: " + String.valueOf(httpResponse.getStatusLine()));
+            MyHttpResponse myHttpResponse = new MyHttpResponse();
+            myHttpResponse.setHeaders(httpResponse.getAllHeaders());
+            myHttpResponse.setHtml(getHtmlFromResponse(httpResponse));
+            return myHttpResponse;
+        } catch (ParseException | IOException e) {
+            LOG.error(e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static void setRequest(HttpRequestBase request,
+                                   Map<String, String> map,
+                                   String cookie) {
+        request.setHeader("Content-type", "application/x-www-form-urlencoded");
+        request.setHeader("User-Agent", USER_AGENT); // 设置请求头消息User-Agent
+        request.setHeader("Content-type", "application/x-www-form-urlencoded");
+        request.addHeader("Cookie", cookie);
+
+        if (request instanceof HttpPost) {
+            List<NameValuePair> params = new ArrayList<>();
+            if (map != null) {
+                for (Map.Entry<String, String> entry : map.entrySet()) {
+                    params.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+                }
+            }
+
+            try {
+                ((HttpPost) request).setEntity(new UrlEncodedFormEntity(params, "utf-8"));
+            } catch (UnsupportedEncodingException e) {
+                LOG.error(e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    public static MyHttpResponse getHttpResponse(HttpRequestBase request,
+                                                 Map<String, String> map,
+                                                 String cookie,
+                                                 String proxyHost, int proxyPort, String proxyType) {
+        setRequest(request, map, cookie);
+
+        StringBuilder htmlBuilder = new StringBuilder();
+
+        if ("SOCKS".equalsIgnoreCase(proxyType)) {
+            CloseableHttpClient httpclient = getHttpClient();
+            try {
+                InetSocketAddress socksaddr = new InetSocketAddress(proxyHost, proxyPort);
+                HttpClientContext context = HttpClientContext.create();
+                context.setAttribute("socks.address", socksaddr);
+
+
+                LOG.info("Executing request " + request + " via SOCKS proxy " + socksaddr);
+                try (CloseableHttpResponse httpResponse = httpclient.execute(request, context)) {
+                    LOG.info("----------------------------------------");
+                    LOG.info("Response Status: " + String.valueOf(httpResponse.getStatusLine()));
+                    MyHttpResponse myHttpResponse = new MyHttpResponse();
+                    myHttpResponse.setHeaders(httpResponse.getAllHeaders());
+                    myHttpResponse.setHtml(getHtmlFromResponse(httpResponse));
+                    return myHttpResponse;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            } finally {
+                try {
+                    httpclient.close();
+                } catch (IOException e) {
+                    LOG.error(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        } else if ("HTTP".equalsIgnoreCase(proxyType)) {
+            HttpClientBuilder hcBuilder = HttpClients.custom();
+            HttpHost proxy = new HttpHost(proxyHost, proxyPort, "http");
+            DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+            hcBuilder.setRoutePlanner(routePlanner);
+            CloseableHttpClient httpClient = hcBuilder.build();
+            LOG.info("Executing request " + request + " via HTTP proxy " + proxy);
+
+            try {
+                HttpResponse httpResponse = httpClient.execute(request);
+                LOG.info("----------------------------------------");
+                LOG.info("Response Status: " + String.valueOf(httpResponse.getStatusLine()));
+                MyHttpResponse myHttpResponse = new MyHttpResponse();
+                myHttpResponse.setHeaders(httpResponse.getAllHeaders());
+                myHttpResponse.setHtml(getHtmlFromResponse(httpResponse));
+                return myHttpResponse;
+            } catch (IOException e) {
+                LOG.error(e.getMessage());
+                e.printStackTrace();
+                return null;
+            } finally {
+                try {
+                    httpClient.close();
+                } catch (IOException e) {
+                    LOG.error(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            LOG.error("Unsupported proxy type: " + proxyType);
+            return null;
+        }
+    }
 
 }
