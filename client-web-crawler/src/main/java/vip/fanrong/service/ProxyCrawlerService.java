@@ -82,6 +82,8 @@ public class ProxyCrawlerService {
 
         List<ProxyConfig> list = proxyConfigMapper.getProxyConfigsByLimit(limit);
         if (list == null || list.isEmpty()) {
+            isValidateProxyRunning = false;
+            LOG.info("Validate Proxy is end...");
             return 0;
         }
 
