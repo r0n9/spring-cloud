@@ -3,6 +3,7 @@ package vip.fanrong.service;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -49,7 +50,12 @@ public class ZmzCrawlerService {
     private ProxyCrawlerService proxyCrawlerService;
 
     public List<ZmzResourceTop> getZmzResourceTops() {
-        String html = MyHttpClient.httpGet("http://m.zimuzu.tv/resource/top");
+        HttpGet request = new HttpGet("http://m.zimuzu.tv/resource/top");
+        MyHttpResponse response = MyHttpClient.getHttpResponse(request, null, null);
+        if (null == response) {
+            return null;
+        }
+        String html = response.getHtml();
         Date getTime = Calendar.getInstance(Locale.CHINA).getTime();
         List<ZmzResourceTop> list = parseHtml(html, getTime);
         String getTimeStr = ZonedDateTime.ofInstant(getTime.toInstant(), ZoneId.of("GMT+08:00")).format(FORMATTER_SIMPLE);
@@ -106,30 +112,39 @@ public class ZmzCrawlerService {
 
     public MovieResource getMovieResourceByZmzResourceId(ProxyConfig proxy, String zmzResourceId) {
         String sourceUrl = "http://www.zimuzu.tv/resource/index_json/rid/" + zmzResourceId + "/channel/movie";
+        HttpGet request = new HttpGet(sourceUrl);
 
         String html;
+        MyHttpResponse response;
         if (null == proxy) {
-            html = MyHttpClient.httpGet(sourceUrl);
-
+            response = MyHttpClient.getHttpResponse(request, null, null);
         } else {
-            html = MyHttpClient.httpGetWithProxy(sourceUrl, proxy.getHost(), proxy.getPort(), proxy.getType());
+            response = MyHttpClient.getHttpResponse(request, null, null,
+                    proxy.getHost(), proxy.getPort(), proxy.getType());
+        }
+
+        if (null == response) {
+            return null;
+        } else {
+            html = response.getHtml();
         }
 
         Matcher matcher = URL_PATTERN_XIAZAI003.matcher(html);
 
         if (matcher.find()) {
             sourceUrl = matcher.group(1);
-
+            request = new HttpGet(sourceUrl);
             if (null == proxy) {
-                html = MyHttpClient.httpGet(sourceUrl);
-
+                response = MyHttpClient.getHttpResponse(request, null, null);
             } else {
-                html = MyHttpClient.httpGetWithProxy(sourceUrl, proxy.getHost(), proxy.getPort(), proxy.getType());
+                response = MyHttpClient.getHttpResponse(request, null, null,
+                        proxy.getHost(), proxy.getPort(), proxy.getType());
             }
 
             // TODO
-            System.out.println(html);
-
+            System.out.println(response.getHtml());
+            MovieResource movieResource = new MovieResource();
+            return movieResource;
         }
 
         return null;
@@ -153,11 +168,19 @@ public class ZmzCrawlerService {
 
         // zmz 注册
         String url = "http://www.zimuzu.tv/user/reg"; // 初始页面
+        HttpGet request = new HttpGet(url);
         String html;
+        MyHttpResponse response;
         if (null == proxy) {
-            html = MyHttpClient.httpGet(url);
+            response = MyHttpClient.getHttpResponse(request, null, null);
         } else {
-            html = MyHttpClient.httpGetWithProxy(url, proxy.getHost(), proxy.getPort(), proxy.getType());
+            response = MyHttpClient.getHttpResponse(request, null, null,
+                    proxy.getHost(), proxy.getPort(), proxy.getType());
+        }
+        if (null == response) {
+            return null;
+        } else {
+            html = response.getHtml();
         }
         Document doc = Jsoup.parse(html);
         Elements inputs = doc.getElementsByTag("input");
@@ -169,8 +192,6 @@ public class ZmzCrawlerService {
             }
         }
         String hashCode = hashInput.attr("value");
-//        System.out.println("hash: " + hashCode);
-
 
         String regUrl = "http://www.zimuzu.tv/User/Reg/saveReg";
         Map<String, String> requestBody = new HashMap<>();
@@ -181,15 +202,19 @@ public class ZmzCrawlerService {
         requestBody.put("sex", zmzAccount.getSex());
         requestBody.put("__hash__", hashCode);
 
+        HttpPost post = new HttpPost(regUrl);
+
         String result;
         if (null == proxy) {
-            result = MyHttpClient.httpPost(regUrl, requestBody, null);
+            response = MyHttpClient.getHttpResponse(post, requestBody, null);
         } else {
-            result = MyHttpClient.httpPostWithProxy(regUrl, requestBody, null, proxy.getHost(), proxy.getPort(), proxy.getType());
+            response = MyHttpClient.getHttpResponse(post, requestBody, null,
+                    proxy.getHost(), proxy.getPort(), proxy.getType());
         }
-
-        if (null == result) {
+        if (null == response) {
             return null;
+        } else {
+            result = response.getHtml();
         }
 
         result = Jsoup.parse(result).getElementById("tipsMsg").getElementsByTag("a").first().text();
@@ -251,7 +276,7 @@ public class ZmzCrawlerService {
 
         for (FutureTask<Boolean> task : tasks) {
             try {
-                boolean result = task.get(90, TimeUnit.MINUTES);
+                boolean result = task.get(120, TimeUnit.MINUTES);
                 if (result) {
                     LOGGER.error("Login task not success.");
                 }
@@ -299,7 +324,7 @@ public class ZmzCrawlerService {
             service.submit(task);
 
             try {
-                return task.get(90, TimeUnit.SECONDS);
+                return task.get(120, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 return false;
             } catch (ExecutionException e) {

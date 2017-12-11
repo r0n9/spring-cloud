@@ -65,4 +65,9 @@ public class ProxyCrawlerServiceTests {
         ProxyConfig proxy = proxyCrawlerService.getRandomValidatedProxy();
         System.out.println(proxy);
     }
+
+    @Test
+    public void testValidateProxy() {
+        proxyCrawlerService.validateProxy(50);
+    }
 }

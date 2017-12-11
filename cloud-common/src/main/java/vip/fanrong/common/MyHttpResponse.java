@@ -1,10 +1,11 @@
 package vip.fanrong.common;
 
 import org.apache.http.Header;
+import org.apache.http.StatusLine;
 
 public class MyHttpResponse {
     private Header[] headers;
-
+    private StatusLine statusLine;
     private String html;
 
     public Header[] getHeaders() {
@@ -21,5 +22,13 @@ public class MyHttpResponse {
 
     public void setHtml(String html) {
         this.html = html;
+    }
+
+    public StatusLine getStatusLine() {
+        return statusLine;
+    }
+
+    public void setStatusLine(StatusLine statusLine) {
+        this.statusLine = statusLine;
     }
 }

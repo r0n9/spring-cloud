@@ -23,24 +23,30 @@ public class ScheduleConfiguration implements SchedulingConfigurer {
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
+        // 获取ZMZ热门资源
         scheduledTaskRegistrar.addCronTask(() -> {
             zmzCrawlerService.loadZmzResourceTops();
         }, "0 0 6,18 * * ?");
 
-
+        // ZMZ账号登陆
         scheduledTaskRegistrar.addCronTask(() -> {
-            ProxyConfig proxy = proxyCrawlerService.getRandomValidatedProxy();
-            proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(proxy, null);
+            zmzCrawlerService.zmzAccountLoginAll();
+        }, "0 50 3 * * ?");
+
+        // 获取Gatherproxy SOCKS代理
+        scheduledTaskRegistrar.addCronTask(() -> {
+            proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(null, null);
         }, "0 0 * * * ?");
 
-
+        // 获取西刺代理
         scheduledTaskRegistrar.addCronTask(() -> {
             ProxyConfig proxy = proxyCrawlerService.getRandomValidatedProxy();
             proxyCrawlerService.loadProxyConfigsFromXicidaili(proxy);
         }, "0 15 * * * ?");
 
+        // 清洗验证代理
         scheduledTaskRegistrar.addCronTask(() -> {
-            proxyCrawlerService.validateProxy(50);
+            proxyCrawlerService.validateProxy(100);
         }, "0 30 * * * ?");
     }
 

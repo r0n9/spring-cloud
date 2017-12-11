@@ -2,6 +2,7 @@ package vip.fanrong.service;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import vip.fanrong.common.MyHttpClient;
+import vip.fanrong.common.MyHttpResponse;
 import vip.fanrong.mapper.ProxyConfigMapper;
 import vip.fanrong.mapper.ProxyConfigValidatedMapper;
 import vip.fanrong.model.ProxyConfig;
@@ -34,7 +36,7 @@ public class ProxyCrawlerService {
 
     private static boolean isValidateProxyRunning = false;
 
-    public Integer testProxy(ProxyConfig proxyConfig) {
+    Integer testProxy(ProxyConfig proxyConfig) {
         int status = MyHttpClient.testProxy(proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
         return status;
     }
@@ -63,7 +65,10 @@ public class ProxyCrawlerService {
     }
 
     public String getProxyInfo(ProxyConfig proxyConfig) {
-        return MyHttpClient.httpGetWithProxy("http://ip.chinaz.com/getip.aspx", proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
+        HttpGet request = new HttpGet("http://ip.chinaz.com/getip.aspx");
+        MyHttpResponse myHttpResponse = MyHttpClient.getHttpResponse(request, null, null,
+                proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
+        return myHttpResponse.getHtml();
     }
 
     public Integer validateProxy(int limit) {
@@ -82,33 +87,40 @@ public class ProxyCrawlerService {
 
         int validated = 0;
         ExecutorService executorService = Executors.newFixedThreadPool(10);
+        List<FutureTask<ProxyConfig>> tasks = new ArrayList<>();
         for (ProxyConfig pc : list) {
             if (StringUtils.isNotBlank(pc.getStatus())) {
                 continue;
             }
 
-            FutureTask<Integer> future = new FutureTask<>(new Callable<Integer>() {
-                @Override
-                public Integer call() throws Exception {
-                    return ProxyCrawlerService.this.testProxy(pc);
-                }
+            FutureTask<ProxyConfig> task = new FutureTask<>(() -> {
+                int status = testProxy(pc);
+                pc.setStatus(String.valueOf(status));
+                return pc;
             });
-            executorService.execute(future);
-            int statusCode;
+
+            executorService.submit(task);
+            tasks.add(task);
+        }
+
+        for (Future<ProxyConfig> task : tasks) {
+            ProxyConfig proxyConfig = null;
             try {
-                statusCode = future.get(120, TimeUnit.SECONDS);
+                proxyConfig = task.get(2, TimeUnit.MINUTES);
             } catch (TimeoutException e) {
-                statusCode = HttpStatus.SC_REQUEST_TIMEOUT;
+                proxyConfig.setStatus(String.valueOf(HttpStatus.SC_REQUEST_TIMEOUT));
             } catch (Exception e) {
-                statusCode = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+                if (null == proxyConfig) {
+                    continue;
+                }
+                proxyConfig.setStatus(String.valueOf(HttpStatus.SC_REQUEST_TIMEOUT));
             }
 
-            pc.setStatus(String.valueOf(statusCode));
-            pc.setStatusUpdateTime(Calendar.getInstance(Locale.CHINA).getTime());
-            proxyConfigMapper.update(pc);
+            proxyConfig.setStatusUpdateTime(Calendar.getInstance(Locale.CHINA).getTime());
+            proxyConfigMapper.update(proxyConfig);
 
-            if (statusCode == HttpStatus.SC_OK) {
-                proxyConfigValidatedMapper.insert(pc);
+            if (String.valueOf(HttpStatus.SC_OK).equalsIgnoreCase(proxyConfig.getStatus())) {
+                proxyConfigValidatedMapper.insert(proxyConfig);
                 validated++;
             }
         }
@@ -124,21 +136,29 @@ public class ProxyCrawlerService {
 
     public List<ProxyConfig> getSocksProxyConfigsFromGatherproxy(ProxyConfig proxyConfig, String byCountry) {
         String url = "http://www.gatherproxy.com/zh/sockslist";
-
         if (StringUtils.isNotBlank(byCountry)) {
             url += "/country/?c=" + byCountry;
         }
+        HttpGet request = new HttpGet(url);
 
-        String html = null;
+        String html;
+        MyHttpResponse response;
         if (proxyConfig == null || proxyConfig.getHost() == null) {
-            html = MyHttpClient.httpGet(url);
+            response = MyHttpClient.getHttpResponse(request, null, null);
         } else {
-            html = MyHttpClient.httpGetWithProxy(url, proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
+            response = MyHttpClient.getHttpResponse(request, null, null,
+                    proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
+        }
+
+        List<ProxyConfig> results = new ArrayList<>();
+        if (null == response) {
+            return results;
+        } else {
+            html = response.getHtml();
         }
 
         Document doc = Jsoup.parse(html);
         Elements trs = doc.getElementsByTag("tr");
-        List<ProxyConfig> results = new ArrayList<>();
         for (Element tr : trs) {
             Elements tds = tr.getElementsByTag("td");
             if (tds == null || tds.size() != 7) {
@@ -166,18 +186,19 @@ public class ProxyCrawlerService {
         if (list == null || list.isEmpty()) {
             return 0;
         }
-        int loaded = proxyConfigMapper.batchInsert(list);
-        return loaded;
+        return proxyConfigMapper.batchInsert(list);
     }
 
     public List<ProxyConfig> getProxyConfigsFromXicidaili(ProxyConfig proxyConfig) {
         String url = "http://www.xicidaili.com";
+        HttpGet request = new HttpGet(url);
 
-        String html = null;
+        String html;
         if (proxyConfig == null || proxyConfig.getHost() == null) {
-            html = MyHttpClient.httpGet(url);
+            html = MyHttpClient.getHttpResponse(request, null, null).getHtml();
         } else {
-            html = MyHttpClient.httpGetWithProxy(url, proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
+            html = MyHttpClient.getHttpResponse(request, null, null,
+                    proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType()).getHtml();
         }
 
         Document doc = Jsoup.parse(html);
