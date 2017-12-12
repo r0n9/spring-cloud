@@ -15,11 +15,12 @@ public class Test {
 
 
     public static void main(String[] args) {
-        HttpGet request = new HttpGet("http://www.zimuzu.tv/resource/index_json/rid/35726/channel/movie");
+        HttpGet request = new HttpGet("http://www.baidu.com");
 
-        MyHttpResponse response = MyHttpClient.getHttpResponse(request, null, null);
+        MyHttpResponse response = MyHttpClient.getHttpResponse(request, null, null, "183.30.197.8", 9797, "HTTP");
 
         System.out.println(response.getHtml());
+        System.out.println(response.getStatusLine());
 
 
     }

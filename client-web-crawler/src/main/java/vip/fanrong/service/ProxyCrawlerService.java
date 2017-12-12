@@ -94,9 +94,16 @@ public class ProxyCrawlerService {
                 }
 
                 FutureTask<ProxyConfig> task = new FutureTask<>(() -> {
-                    int status = testProxy(pc);
-                    pc.setStatus(String.valueOf(status));
-                    return pc;
+                    try {
+                        int status = testProxy(pc);
+                        pc.setStatus(String.valueOf(status));
+                    } catch (Exception e) {
+                        LOG.warn("Proxy validate failed: " + pc);
+                        pc.setStatus(String.valueOf(HttpStatus.SC_INTERNAL_SERVER_ERROR));
+                        return pc;
+                    } finally {
+                        return pc;
+                    }
                 });
 
                 executorService.submit(task);
