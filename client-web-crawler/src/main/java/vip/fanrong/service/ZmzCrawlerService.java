@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import vip.fanrong.common.JsonUtil;
 import vip.fanrong.common.MyHttpClient;
 import vip.fanrong.common.MyHttpResponse;
+import vip.fanrong.mapper.MovieResourceMapper;
 import vip.fanrong.mapper.ZmzAccountMapper;
 import vip.fanrong.mapper.ZmzResourceTopMapper;
 import vip.fanrong.model.*;
@@ -38,11 +39,16 @@ public class ZmzCrawlerService {
 
     private static final Pattern URL_PATTERN_XIAZAI003 = Pattern.compile("((http://xiazai003\\.com/\\w+))");
 
+    private static final Pattern URL_PATTERN_RESOURCE_ID = Pattern.compile("http://m.zimuzu.tv/resource/(\\d+)");
+
     @Autowired
     private ZmzResourceTopMapper zmzResourceTopMapper;
 
     @Autowired
     private ZmzAccountMapper zmzAccountMapper;
+
+    @Autowired
+    private MovieResourceMapper movieResourceMapper;
 
     @Autowired
     private ProxyCrawlerService proxyCrawlerService;
@@ -55,7 +61,7 @@ public class ZmzCrawlerService {
         }
         String html = response.getHtml();
         Date getTime = Calendar.getInstance(Locale.CHINA).getTime();
-        List<ZmzResourceTop> list = parseHtml(html, getTime);
+        List<ZmzResourceTop> list = parseZmzResourceTops(html, getTime);
         String getTimeStr = ZonedDateTime.ofInstant(getTime.toInstant(), ZoneId.of("GMT+08:00")).format(FORMATTER_SIMPLE);
         LOGGER.info("成功获取最新资源数量为：" + list.size() + " 获取时间：" + getTimeStr);
         return list;
@@ -68,7 +74,7 @@ public class ZmzCrawlerService {
     }
 
 
-    private List<ZmzResourceTop> parseHtml(String html, Date getTime) {
+    private List<ZmzResourceTop> parseZmzResourceTops(String html, Date getTime) {
 
         List<ZmzResourceTop> list = new ArrayList<>();
         Document doc = Jsoup.parse(html, "http://m.zimuzu.tv/");
@@ -77,15 +83,15 @@ public class ZmzCrawlerService {
         Element rankingBox2 = doc.getElementById("ranking-box-2"); // 电影
         Element rankingBox3 = doc.getElementById("ranking-box-3"); // 日剧
 
-        parseElement(list, rankingBox1, getTime);
-        parseElement(list, rankingBox2, getTime);
-        parseElement(list, rankingBox3, getTime);
+        parseZmzResourceTops(list, rankingBox1, getTime);
+        parseZmzResourceTops(list, rankingBox2, getTime);
+        parseZmzResourceTops(list, rankingBox3, getTime);
 
         return list;
     }
 
 
-    private void parseElement(List<ZmzResourceTop> list, Element rankingBox, Date getTime) {
+    private void parseZmzResourceTops(List<ZmzResourceTop> list, Element rankingBox, Date getTime) {
         Elements lis = rankingBox.getElementsByTag("li");
         for (Element li : lis) {
             Element count = li.selectFirst("span.count");
@@ -106,6 +112,34 @@ public class ZmzCrawlerService {
 
             list.add(data);
         }
+    }
+
+    public int loadLatestTopMovieResources(ProxyConfig proxy) {
+        List<ZmzResourceTop> list = zmzResourceTopMapper.selectLatest();
+        int count = 0;
+        for (ZmzResourceTop resourceTop : list) {
+            if (!"电影".equalsIgnoreCase(resourceTop.getType())) continue;
+
+            String name = resourceTop.getName();
+            String nameEn = resourceTop.getNameEn();
+            String imgUrl = resourceTop.getImgDataSrc();
+            String src = resourceTop.getSrc();
+            Matcher matcher = URL_PATTERN_RESOURCE_ID.matcher(src);
+            if (!matcher.find()) continue;
+            String resourceId = matcher.group(1);
+
+            List<MovieResource.MovieResourceFile> files = movieResourceMapper.selectBySourceAndResourceId("zmz", resourceId);
+            if (files == null || files.isEmpty()) {
+                MovieResource movieResource = getMovieResourceByZmzResourceId(proxy, resourceId);
+                movieResource.setImgUrl(imgUrl);
+                movieResource.setName(name);
+                movieResource.setNameChn(nameEn);
+                LOGGER.info("New resource found: resourceId=" + resourceId + " name=" + name);
+                movieResourceMapper.insert(movieResource);
+                count++;
+            }
+        }
+        return count;
     }
 
     public MovieResource getMovieResourceByZmzResourceId(ProxyConfig proxy, String zmzResourceId) {

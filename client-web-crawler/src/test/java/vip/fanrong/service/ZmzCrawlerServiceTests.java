@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import vip.fanrong.mapper.MovieResourceMapper;
 import vip.fanrong.model.MovieResource;
 import vip.fanrong.model.ZmzResourceTop;
 
@@ -18,7 +19,7 @@ public class ZmzCrawlerServiceTests {
     private ZmzCrawlerService zmzCrawlerService;
 
     @Autowired
-    ProxyCrawlerService proxyCrawlerService;
+    MovieResourceMapper movieResourceMapper;
 
 
     @Test
@@ -31,6 +32,10 @@ public class ZmzCrawlerServiceTests {
     public void testGetResourceById() {
         MovieResource movieResource = zmzCrawlerService.getMovieResourceByZmzResourceId(null, "35726");
         System.out.println(movieResource);
+
+        movieResourceMapper.insert(movieResource);
+
+        System.out.println(movieResourceMapper.selectBySourceAndResourceId("zmz", "35726"));
     }
 
     @Test
@@ -43,5 +48,11 @@ public class ZmzCrawlerServiceTests {
     @Test
     public void testLoginAll() {
         zmzCrawlerService.zmzAccountLoginAll();
+    }
+
+    @Test
+    public void testLoadLatestTopMovieResources() {
+        int count = zmzCrawlerService.loadLatestTopMovieResources(null);
+        System.out.println("Found " + count);
     }
 }

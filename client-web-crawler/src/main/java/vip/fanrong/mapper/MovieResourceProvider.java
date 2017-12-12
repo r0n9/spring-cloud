@@ -21,36 +21,40 @@ public class MovieResourceProvider {
         sb.append("(source, resource_id, name, alt_name, file_name, file_size, download_type, download_link, insert_time) ");
         sb.append("VALUES ");
 
-        String source = movieResource.getSource();
-        String resourceId = movieResource.getResourceId();
-        String name = movieResource.getName();
-        String altName = movieResource.getNameChn();
+        String source = replaceSingleQuote(movieResource.getSource());
+        String resourceId = replaceSingleQuote(movieResource.getResourceId());
+        String name = replaceSingleQuote(movieResource.getName());
+        String altName = replaceSingleQuote(movieResource.getNameChn());
         String insertTime = "now()";
 
-        String preValue = "(" + source + ", " + resourceId + ", " + name + ", " + altName;
+        String preValue = "('" + source + "', '" + resourceId + "', '" + name + "', '" + altName;
 
         List<ResourceFile> resources = movieResource.getResources();
         for (ResourceFile rf : resources) {
-            String fileName = rf.getFileName();
-            String fileSize = rf.getFileSize();
+            String fileName = replaceSingleQuote(rf.getFileName());
+            String fileSize = replaceSingleQuote(rf.getFileSize());
             Map<DownloadType, String> downloadTypeStringMap = rf.getResources();
             for (DownloadType type : downloadTypeStringMap.keySet()) {
-                String link = downloadTypeStringMap.get(type);
+                String link = replaceSingleQuote(downloadTypeStringMap.get(type));
                 sb.append(preValue);
-                sb.append(", ");
+                sb.append("', '");
                 sb.append(fileName);
-                sb.append(", ");
+                sb.append("', '");
                 sb.append(fileSize);
-                sb.append(", ");
+                sb.append("', '");
                 sb.append(type.name());
-                sb.append(", ");
+                sb.append("', '");
                 sb.append(link);
-                sb.append(", ");
+                sb.append("', ");
                 sb.append(insertTime);
                 sb.append("),");
             }
         }
-        
+
         return StringUtils.removeEnd(sb.toString(), ",");
+    }
+
+    private String replaceSingleQuote(String value) {
+        return StringUtils.replace(value, "'", "''");
     }
 }

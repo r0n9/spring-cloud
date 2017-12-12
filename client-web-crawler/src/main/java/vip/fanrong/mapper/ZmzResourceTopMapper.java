@@ -2,6 +2,7 @@ package vip.fanrong.mapper;
 
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
+import vip.fanrong.model.MovieResource;
 import vip.fanrong.model.ZmzResourceTop;
 
 import java.util.List;
@@ -25,4 +26,18 @@ public interface ZmzResourceTopMapper {
     @InsertProvider(type = ZmzResourceTopProvider.class, method = "batchInsert")
     int batchInsert(@Param("zmzResourceTopList") List<ZmzResourceTop> zmzResourceTopList);
 
+
+    @Select("select * from zmz_resource_top where get_time in (select get_time from (select get_time from zmz_resource_top ORDER BY id desc limit 1) A)")
+    @Results({
+            @Result(column = "get_time", property = "getTime"),
+            @Result(column = "count", property = "count"),
+            @Result(column = "type", property = "type"),
+            @Result(column = "src", property = "src"),
+            @Result(column = "img_data_src", property = "imgDataSrc"),
+            @Result(column = "name", property = "name"),
+            @Result(column = "name_en", property = "nameEn"),
+            @Result(column = "processed", property = "processed"),
+            @Result(column = "process_time", property = "processTime")
+    })
+    List<ZmzResourceTop> selectLatest();
 }
