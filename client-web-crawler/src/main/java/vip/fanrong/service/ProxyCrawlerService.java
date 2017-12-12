@@ -78,61 +78,63 @@ public class ProxyCrawlerService {
             return 0;
         }
         isValidateProxyRunning = true;
-        LOG.info("Validate Proxy is running...");
-
-        List<ProxyConfig> list = proxyConfigMapper.getProxyConfigsByLimit(limit);
-        if (list == null || list.isEmpty()) {
-            isValidateProxyRunning = false;
-            LOG.info("Validate Proxy is end...");
-            return 0;
-        }
-
         int validated = 0;
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
-        List<FutureTask<ProxyConfig>> tasks = new ArrayList<>();
-        for (ProxyConfig pc : list) {
-            if (StringUtils.isNotBlank(pc.getStatus())) {
-                continue;
+        LOG.info("Validate Proxy is running...");
+        try {
+            List<ProxyConfig> list = proxyConfigMapper.getProxyConfigsByLimit(limit);
+            if (list == null || list.isEmpty()) {
+                return 0;
             }
 
-            FutureTask<ProxyConfig> task = new FutureTask<>(() -> {
-                int status = testProxy(pc);
-                pc.setStatus(String.valueOf(status));
-                return pc;
-            });
-
-            executorService.submit(task);
-            tasks.add(task);
-        }
-
-        for (Future<ProxyConfig> task : tasks) {
-            ProxyConfig proxyConfig = null;
-            try {
-                proxyConfig = task.get(2, TimeUnit.MINUTES);
-            } catch (TimeoutException e) {
-                proxyConfig.setStatus(String.valueOf(HttpStatus.SC_REQUEST_TIMEOUT));
-            } catch (Exception e) {
-                if (null == proxyConfig) {
+            ExecutorService executorService = Executors.newFixedThreadPool(10);
+            List<FutureTask<ProxyConfig>> tasks = new ArrayList<>();
+            for (ProxyConfig pc : list) {
+                if (StringUtils.isNotBlank(pc.getStatus())) {
                     continue;
                 }
-                proxyConfig.setStatus(String.valueOf(HttpStatus.SC_REQUEST_TIMEOUT));
+
+                FutureTask<ProxyConfig> task = new FutureTask<>(() -> {
+                    int status = testProxy(pc);
+                    pc.setStatus(String.valueOf(status));
+                    return pc;
+                });
+
+                executorService.submit(task);
+                tasks.add(task);
             }
 
-            proxyConfig.setStatusUpdateTime(Calendar.getInstance(Locale.CHINA).getTime());
-            proxyConfigMapper.update(proxyConfig);
+            for (Future<ProxyConfig> task : tasks) {
+                ProxyConfig proxyConfig = null;
+                try {
+                    proxyConfig = task.get(2, TimeUnit.MINUTES);
+                } catch (TimeoutException e) {
+                    if (null == proxyConfig) {
+                        continue;
+                    }
+                    proxyConfig.setStatus(String.valueOf(HttpStatus.SC_REQUEST_TIMEOUT));
+                } catch (Exception e) {
+                    if (null == proxyConfig) {
+                        continue;
+                    }
+                    proxyConfig.setStatus(String.valueOf(HttpStatus.SC_REQUEST_TIMEOUT));
+                }
 
-            if (String.valueOf(HttpStatus.SC_OK).equalsIgnoreCase(proxyConfig.getStatus())) {
-                proxyConfigValidatedMapper.insert(proxyConfig);
-                validated++;
+                proxyConfig.setStatusUpdateTime(Calendar.getInstance(Locale.CHINA).getTime());
+                proxyConfigMapper.update(proxyConfig);
+
+                if (String.valueOf(HttpStatus.SC_OK).equalsIgnoreCase(proxyConfig.getStatus())) {
+                    proxyConfigValidatedMapper.insert(proxyConfig);
+                    validated++;
+                }
             }
+
+            executorService.shutdown();
+
+        } finally {
+            LOG.info("Validate Proxy is end...");
+            isValidateProxyRunning = false;
+            return validated;
         }
-
-        executorService.shutdown();
-
-        LOG.info("Validate Proxy is end...");
-        isValidateProxyRunning = false;
-
-        return validated;
     }
 
 

@@ -27,6 +27,7 @@ import vip.fanrong.common.proxy.MySSLConnectionSocketFactory;
 
 import java.io.*;
 import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ import java.util.Map;
 public class MyHttpClient {
     private final static Logger LOG = LoggerFactory.getLogger(MyHttpClient.class);
 
-    private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0";
+    private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36";
 
     public static int testProxy(String proxyHost, int proxyPort, String proxyType) {
         HttpGet request = new HttpGet("http://baidu.com/");
@@ -64,7 +65,7 @@ public class MyHttpClient {
     private static void entityToString(HttpEntity entity, StringBuilder htmlBuilder) throws IOException {
         if (entity != null) {
             InputStream stream = entity.getContent();
-            BufferedReader in = new BufferedReader(new InputStreamReader(stream));
+            BufferedReader in = new BufferedReader(new InputStreamReader(stream, Charset.forName("utf-8")));
             String readLine;
             while ((readLine = in.readLine()) != null) {
                 htmlBuilder.append(readLine).append("\n");
@@ -89,7 +90,6 @@ public class MyHttpClient {
         setRequest(request, map, cookie);
 
         // 执行post请求操作，并拿到结果
-        StringBuilder htmlBuilder = new StringBuilder();
         LOG.info("Executing request " + request + " via no proxy ");
         try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(request)) {
             LOG.info("----------------------------------------");
@@ -101,7 +101,6 @@ public class MyHttpClient {
             return myHttpResponse;
         } catch (ParseException | IOException e) {
             LOG.error(e.getMessage());
-            e.printStackTrace();
             return null;
         }
     }
@@ -109,9 +108,10 @@ public class MyHttpClient {
     private static void setRequest(HttpRequestBase request,
                                    Map<String, String> map,
                                    String cookie) {
-        request.setHeader("Content-type", "application/x-www-form-urlencoded");
+        request.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
+        request.setHeader("Accept-Encoding", "gzip, deflate");
+        request.setHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7");
         request.setHeader("User-Agent", USER_AGENT); // 设置请求头消息User-Agent
-        request.setHeader("Content-type", "application/x-www-form-urlencoded");
         request.addHeader("Cookie", cookie);
 
         if (request instanceof HttpPost) {
@@ -126,7 +126,6 @@ public class MyHttpClient {
                 ((HttpPost) request).setEntity(new UrlEncodedFormEntity(params, "utf-8"));
             } catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage());
-                e.printStackTrace();
             }
         }
     }
@@ -158,7 +157,6 @@ public class MyHttpClient {
                     myHttpResponse.setStatusLine(httpResponse.getStatusLine());
                     return myHttpResponse;
                 } catch (IOException e) {
-                    e.printStackTrace();
                     return null;
                 }
             } finally {
@@ -166,7 +164,6 @@ public class MyHttpClient {
                     httpclient.close();
                 } catch (IOException e) {
                     LOG.error(e.getMessage());
-                    e.printStackTrace();
                 }
             }
         } else if ("HTTP".equalsIgnoreCase(proxyType)) {
@@ -186,16 +183,14 @@ public class MyHttpClient {
                 myHttpResponse.setHtml(getHtmlFromResponse(httpResponse));
                 myHttpResponse.setStatusLine(httpResponse.getStatusLine());
                 return myHttpResponse;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 LOG.error(e.getMessage());
-                e.printStackTrace();
                 return null;
             } finally {
                 try {
                     httpClient.close();
                 } catch (IOException e) {
                     LOG.error(e.getMessage());
-                    e.printStackTrace();
                 }
             }
         } else {

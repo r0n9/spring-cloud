@@ -1,6 +1,7 @@
 package vip.fanrong.model;
 
 import java.util.Date;
+import java.util.List;
 
 public class MovieResource {
 
@@ -15,7 +16,7 @@ public class MovieResource {
 
     private String resourceId;
 
-    private String resources; // JSON format for ResourceFile list;
+    private List<ResourceFile> resources; // JSON format for ResourceFile list;
 
     private Date updateTime;
 
@@ -69,11 +70,11 @@ public class MovieResource {
         this.resourceId = resourceId;
     }
 
-    public String getResources() {
+    public List<ResourceFile> getResources() {
         return resources;
     }
 
-    public void setResources(String resources) {
+    public void setResources(List<ResourceFile> resources) {
         this.resources = resources;
     }
 
@@ -91,5 +92,20 @@ public class MovieResource {
 
     public void setInsertTime(Date insertTime) {
         this.insertTime = insertTime;
+    }
+
+    @Override
+    public String toString() {
+        return "MovieResource{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", nameChn='" + nameChn + '\'' +
+                ", imgUrl='" + imgUrl + '\'' +
+                ", source='" + source + '\'' +
+                ", resourceId='" + resourceId + '\'' +
+                ", resources='" + resources + '\'' +
+                ", updateTime=" + updateTime +
+                ", insertTime=" + insertTime +
+                '}';
     }
 }

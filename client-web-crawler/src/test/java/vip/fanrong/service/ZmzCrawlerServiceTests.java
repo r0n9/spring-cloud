@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import vip.fanrong.model.MovieResource;
 import vip.fanrong.model.ZmzResourceTop;
 
 import java.util.List;
@@ -28,7 +29,8 @@ public class ZmzCrawlerServiceTests {
 
     @Test
     public void testGetResourceById() {
-        zmzCrawlerService.getMovieResourceByZmzResourceId(null, "35726");
+        MovieResource movieResource = zmzCrawlerService.getMovieResourceByZmzResourceId(null, "35726");
+        System.out.println(movieResource);
     }
 
     @Test

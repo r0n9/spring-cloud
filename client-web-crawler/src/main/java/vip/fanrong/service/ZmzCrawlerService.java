@@ -11,14 +11,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import vip.fanrong.common.JsonUtil;
 import vip.fanrong.common.MyHttpClient;
 import vip.fanrong.common.MyHttpResponse;
 import vip.fanrong.mapper.ZmzAccountMapper;
 import vip.fanrong.mapper.ZmzResourceTopMapper;
-import vip.fanrong.model.MovieResource;
-import vip.fanrong.model.ProxyConfig;
-import vip.fanrong.model.ZmzAccount;
-import vip.fanrong.model.ZmzResourceTop;
+import vip.fanrong.model.*;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -128,11 +126,11 @@ public class ZmzCrawlerService {
         } else {
             html = response.getHtml();
         }
-
         Matcher matcher = URL_PATTERN_XIAZAI003.matcher(html);
 
         if (matcher.find()) {
             sourceUrl = matcher.group(1);
+            LOGGER.info("Resource page url: " + sourceUrl);
             request = new HttpGet(sourceUrl);
             if (null == proxy) {
                 response = MyHttpClient.getHttpResponse(request, null, null);
@@ -141,15 +139,69 @@ public class ZmzCrawlerService {
                         proxy.getHost(), proxy.getPort(), proxy.getType());
             }
 
-            // TODO
-            System.out.println(response.getHtml());
-            MovieResource movieResource = new MovieResource();
-            return movieResource;
+
+            if (null == response) {
+                return null;
+            }
+            return getMovieResource(response.getHtml(), zmzResourceId, "zmz");
         }
 
         return null;
 
 
+    }
+
+    private MovieResource getMovieResource(String html, String resouceId, String source) {
+        if (StringUtils.isBlank(html)) {
+            return null;
+        }
+
+        List<String> ids = new ArrayList<>();
+//        ids.add("tab-g1-APP");
+        ids.add("tab-g1-HR-HDTV");
+        ids.add("tab-g1-MP4");
+        ids.add("tab-g1-RMVB");
+        ids.add("tab-g1-WEB-DL");
+
+        Document doc = Jsoup.parse(html);
+        List<ResourceFile> resourceFiles = new ArrayList<>();
+        for (String id : ids) {
+            ResourceFile resourceFile = new ResourceFile();
+            Element element = doc.getElementById(id);
+            Element titleElement = element.selectFirst("div.title");
+            String fileName = titleElement.selectFirst("span.filename").text();
+            String fileSize = titleElement.selectFirst("span.filesize").text();
+
+            resourceFile.setFileName(fileName);
+            resourceFile.setFileSize(fileSize);
+            Map<DownloadType, String> resources = new HashMap<>();
+            resourceFile.setResources(resources);
+            Elements elements = element.select("a.btn");
+            if (null == elements) {
+                continue;
+            }
+
+            for (Element el : elements) {
+                String downloadLink = el.attr("href");
+                if (StringUtils.isBlank(downloadLink)) {
+                    continue;
+                }
+                if (null == el.selectFirst("p.desc")) {
+                    continue;
+                }
+                String nameChn = el.selectFirst("p.desc").text();
+                DownloadType type = DownloadType.valueOfNameChn(nameChn);
+                resources.put(type, downloadLink);
+            }
+            resourceFiles.add(resourceFile);
+        }
+
+        MovieResource movieResource = new MovieResource();
+        movieResource.setResourceId(resouceId);
+        movieResource.setSource(source);
+        movieResource.setResources(resourceFiles);
+        movieResource.setInsertTime(Calendar.getInstance(Locale.CHINA).getTime());
+        return movieResource;
     }
 
     public ZmzAccount registerZmzAccountRandom(ProxyConfig proxy) {
@@ -277,7 +329,7 @@ public class ZmzCrawlerService {
         for (FutureTask<Boolean> task : tasks) {
             try {
                 boolean result = task.get(120, TimeUnit.MINUTES);
-                if (result) {
+                if (!result) {
                     LOGGER.error("Login task not success.");
                 }
             } catch (InterruptedException | ExecutionException | TimeoutException e) {

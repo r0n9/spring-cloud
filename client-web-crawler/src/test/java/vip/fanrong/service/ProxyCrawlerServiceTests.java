@@ -68,6 +68,6 @@ public class ProxyCrawlerServiceTests {
 
     @Test
     public void testValidateProxy() {
-        proxyCrawlerService.validateProxy(50);
+        proxyCrawlerService.validateProxy(100);
     }
 }
