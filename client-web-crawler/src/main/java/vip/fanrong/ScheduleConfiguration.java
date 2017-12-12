@@ -25,29 +25,35 @@ public class ScheduleConfiguration implements SchedulingConfigurer {
     public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
         // 获取ZMZ热门资源
         scheduledTaskRegistrar.addCronTask(() -> {
-            zmzCrawlerService.loadZmzResourceTops();
-        }, "0 0 6,18 * * ?");
+            zmzCrawlerService.loadZmzResourceTops(); // 获取热门资源列表、入库
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            zmzCrawlerService.loadLatestTopMovieResources(null); // 获取电影资源信息、入库
+        }, "0 0 6,18 * * ?"); // 每天6点和18点
 
         // ZMZ账号登陆
         scheduledTaskRegistrar.addCronTask(() -> {
             zmzCrawlerService.zmzAccountLoginAll();
-        }, "0 50 3 * * ?");
+        }, "0 50 3 * * ?"); // 每天3:50
 
         // 获取Gatherproxy SOCKS代理
         scheduledTaskRegistrar.addCronTask(() -> {
             proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(null, null);
-        }, "0 0 * * * ?");
+        }, "0 0 * * * ?"); // 每个整点
 
         // 获取西刺代理
         scheduledTaskRegistrar.addCronTask(() -> {
             ProxyConfig proxy = proxyCrawlerService.getRandomValidatedProxy();
             proxyCrawlerService.loadProxyConfigsFromXicidaili(proxy);
-        }, "0 15 * * * ?");
+        }, "0 10 * * * ?"); // 10分
 
         // 清洗验证代理
         scheduledTaskRegistrar.addCronTask(() -> {
             proxyCrawlerService.validateProxy(100);
-        }, "0 30 * * * ?");
+        }, "0 20 * * * ?"); // 20分
     }
 
 }
