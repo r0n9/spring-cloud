@@ -11,7 +11,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import vip.fanrong.common.JsonUtil;
 import vip.fanrong.common.MyHttpClient;
 import vip.fanrong.common.MyHttpResponse;
 import vip.fanrong.mapper.MovieResourceMapper;
@@ -131,6 +130,10 @@ public class ZmzCrawlerService {
             List<MovieResource.MovieResourceFile> files = movieResourceMapper.selectBySourceAndResourceId("zmz", resourceId);
             if (files == null || files.isEmpty()) {
                 MovieResource movieResource = getMovieResourceByZmzResourceId(proxy, resourceId);
+                if (movieResource == null || movieResource.getResources() == null || movieResource.getResources().isEmpty()) {
+                    LOGGER.warn("Resource not found: resourceId=" + resourceId + " name=" + name);
+                    continue;
+                }
                 movieResource.setImgUrl(imgUrl);
                 movieResource.setName(name);
                 movieResource.setNameChn(nameEn);
@@ -192,16 +195,21 @@ public class ZmzCrawlerService {
 
         List<String> ids = new ArrayList<>();
 //        ids.add("tab-g1-APP");
+        ids.add("tab-g1-720P");
         ids.add("tab-g1-HR-HDTV");
         ids.add("tab-g1-MP4");
         ids.add("tab-g1-RMVB");
         ids.add("tab-g1-WEB-DL");
+        ids.add("tab-g3-OST");
 
         Document doc = Jsoup.parse(html);
         List<ResourceFile> resourceFiles = new ArrayList<>();
         for (String id : ids) {
             ResourceFile resourceFile = new ResourceFile();
             Element element = doc.getElementById(id);
+            if (element == null) {
+                continue;
+            }
             Element titleElement = element.selectFirst("div.title");
             String fileName = titleElement.selectFirst("span.filename").text();
             String fileSize = titleElement.selectFirst("span.filesize").text();

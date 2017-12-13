@@ -91,7 +91,9 @@ public class MyHttpClient {
 
         // 执行post请求操作，并拿到结果
         LOG.info("Executing request " + request + " via no proxy ");
-        try (CloseableHttpResponse httpResponse = HttpClients.createDefault().execute(request)) {
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        try {
+            CloseableHttpResponse httpResponse = httpClient.execute(request);
             LOG.info("----------------------------------------");
             LOG.info("Response Status: " + String.valueOf(httpResponse.getStatusLine()));
             MyHttpResponse myHttpResponse = new MyHttpResponse();
@@ -102,6 +104,12 @@ public class MyHttpClient {
         } catch (ParseException | IOException e) {
             LOG.error(e.getMessage());
             return null;
+        } finally {
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
