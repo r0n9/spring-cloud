@@ -162,7 +162,7 @@ public class KdsCrawlerService {
             set.addAll(pres);
         }
 
-        Calendar calendar = Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00"));
         calendar.setTime(new Date());
         calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) - 7); // 一周内
         List<Post> hotTopics = set.stream()

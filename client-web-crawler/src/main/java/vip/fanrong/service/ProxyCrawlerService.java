@@ -126,7 +126,7 @@ public class ProxyCrawlerService {
                     proxyConfig.setStatus(String.valueOf(HttpStatus.SC_REQUEST_TIMEOUT));
                 }
 
-                proxyConfig.setStatusUpdateTime(Calendar.getInstance(Locale.CHINA).getTime());
+                proxyConfig.setStatusUpdateTime(Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime());
                 proxyConfigMapper.update(proxyConfig);
 
                 if (String.valueOf(HttpStatus.SC_OK).equalsIgnoreCase(proxyConfig.getStatus())) {
@@ -184,7 +184,7 @@ public class ProxyCrawlerService {
             proxy.setPort(Integer.parseInt(m2.group(1)));
             proxy.setType("SOCKS");
             proxy.setLocation(tds.get(3).getElementsByTag("a").first().text());
-            proxy.setInsertTime(Calendar.getInstance(Locale.CHINA).getTime());
+            proxy.setInsertTime(Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime());
             results.add(proxy);
         }
 
@@ -235,7 +235,7 @@ public class ProxyCrawlerService {
             }
             proxy.setType(type);
             proxy.setLocation(tds.get(3).text());
-            proxy.setInsertTime(Calendar.getInstance(Locale.CHINA).getTime());
+            proxy.setInsertTime(Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime());
             results.add(proxy);
         }
 

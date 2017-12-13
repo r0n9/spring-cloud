@@ -60,7 +60,7 @@ public class ZmzCrawlerService {
             return null;
         }
         String html = response.getHtml();
-        Date getTime = Calendar.getInstance(Locale.CHINA).getTime();
+        Date getTime = Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime();
         List<ZmzResourceTop> list = parseZmzResourceTops(html, getTime);
         String getTimeStr = ZonedDateTime.ofInstant(getTime.toInstant(), ZoneId.of("GMT+08:00")).format(FORMATTER_SIMPLE);
         LOGGER.info("成功获取最新资源数量为：" + list.size() + " 获取时间：" + getTimeStr);
@@ -234,7 +234,7 @@ public class ZmzCrawlerService {
         movieResource.setResourceId(resouceId);
         movieResource.setSource(source);
         movieResource.setResources(resourceFiles);
-        movieResource.setInsertTime(Calendar.getInstance(Locale.CHINA).getTime());
+        movieResource.setInsertTime(Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime());
         return movieResource;
     }
 
@@ -309,7 +309,7 @@ public class ZmzCrawlerService {
 
         if (isSuccess) {
             zmzAccount.setIsValide(1);
-            zmzAccount.setRegisterDate(Calendar.getInstance(Locale.CHINA).getTime());
+            zmzAccount.setRegisterDate(Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime());
             zmzAccountMapper.insert(zmzAccount);
         } else {
             return null;
@@ -393,7 +393,7 @@ public class ZmzCrawlerService {
             if (response != null && response.getHtml() != null) {
                 if (StringUtils.contains(response.getHtml(), "登录成功")) {
                     LOGGER.info("Login succeeded for account: " + account);
-                    account.setLastLoginDate(Calendar.getInstance(Locale.CHINA).getTime());
+                    account.setLastLoginDate(Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime());
                     zmzAccountMapper.update(account);
                     return true;
                 }
