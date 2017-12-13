@@ -24,7 +24,7 @@ public class ZmzCrawlerServiceTests {
 
     @Test
     public void testGetZmzResourceTops() {
-        List<ZmzResourceTop> list = zmzCrawlerService.getZmzResourceTops();
+        List<ZmzResourceTop> list = zmzCrawlerService.getZmzResourceTops(null);
         System.out.println(list);
     }
 
