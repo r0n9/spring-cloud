@@ -227,6 +227,7 @@ public class ProxyCrawlerService {
             String type = tds.get(5).text();
             if (StringUtils.containsIgnoreCase(type, "socks")) {
                 type = "SOCKS";
+                continue; // socks proxies from xicidaili are all expired
             } else if (StringUtils.containsIgnoreCase(type, "http")) {
                 type = "HTTP";
             } else {
