@@ -25,7 +25,7 @@ public class ScheduleConfiguration implements SchedulingConfigurer {
     public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
         // 获取ZMZ热门资源
         scheduledTaskRegistrar.addCronTask(() -> {
-            zmzCrawlerService.loadZmzResourceTops(); // 获取热门资源列表、入库
+            zmzCrawlerService.loadZmzResourceTops(null); // 获取热门资源列表、入库
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {

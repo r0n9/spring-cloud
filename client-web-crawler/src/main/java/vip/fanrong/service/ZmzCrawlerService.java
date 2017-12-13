@@ -5,6 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -53,9 +54,24 @@ public class ZmzCrawlerService {
     @Autowired
     private ProxyCrawlerService proxyCrawlerService;
 
-    public List<ZmzResourceTop> getZmzResourceTops() {
+
+    public MyHttpResponse getMyHttpResponse(ProxyConfig proxy,
+                                            HttpRequestBase request,
+                                            Map<String, String> map,
+                                            String cookie) {
+        MyHttpResponse response;
+        if (null == proxy) {
+            response = MyHttpClient.getHttpResponse(request, map, cookie);
+        } else {
+            response = MyHttpClient.getHttpResponse(request, map, cookie,
+                    proxy.getHost(), proxy.getPort(), proxy.getType());
+        }
+        return response;
+    }
+
+    public List<ZmzResourceTop> getZmzResourceTops(ProxyConfig proxy) {
         HttpGet request = new HttpGet("http://m.zimuzu.tv/resource/top");
-        MyHttpResponse response = MyHttpClient.getHttpResponse(request, null, null);
+        MyHttpResponse response = getMyHttpResponse(proxy, request, null, null);
         if (null == response) {
             return null;
         }
@@ -67,8 +83,8 @@ public class ZmzCrawlerService {
         return list;
     }
 
-    public int loadZmzResourceTops() {
-        List<ZmzResourceTop> list = getZmzResourceTops();
+    public int loadZmzResourceTops(ProxyConfig proxy) {
+        List<ZmzResourceTop> list = getZmzResourceTops(proxy);
         int loaded = zmzResourceTopMapper.batchInsert(list);
         return loaded;
     }
@@ -151,13 +167,7 @@ public class ZmzCrawlerService {
         HttpGet request = new HttpGet(sourceUrl);
 
         String html;
-        MyHttpResponse response;
-        if (null == proxy) {
-            response = MyHttpClient.getHttpResponse(request, null, null);
-        } else {
-            response = MyHttpClient.getHttpResponse(request, null, null,
-                    proxy.getHost(), proxy.getPort(), proxy.getType());
-        }
+        MyHttpResponse response = getMyHttpResponse(proxy, request, null, null);
 
         if (null == response) {
             return null;
@@ -265,13 +275,7 @@ public class ZmzCrawlerService {
         String url = "http://www.zimuzu.tv/user/reg"; // 初始页面
         HttpGet request = new HttpGet(url);
         String html;
-        MyHttpResponse response;
-        if (null == proxy) {
-            response = MyHttpClient.getHttpResponse(request, null, null);
-        } else {
-            response = MyHttpClient.getHttpResponse(request, null, null,
-                    proxy.getHost(), proxy.getPort(), proxy.getType());
-        }
+        MyHttpResponse response = getMyHttpResponse(proxy, request, null, null);
         if (null == response) {
             return null;
         } else {
@@ -300,12 +304,8 @@ public class ZmzCrawlerService {
         HttpPost post = new HttpPost(regUrl);
 
         String result;
-        if (null == proxy) {
-            response = MyHttpClient.getHttpResponse(post, requestBody, null);
-        } else {
-            response = MyHttpClient.getHttpResponse(post, requestBody, null,
-                    proxy.getHost(), proxy.getPort(), proxy.getType());
-        }
+        response = getMyHttpResponse(proxy, request, requestBody, null);
+
         if (null == response) {
             return null;
         } else {
@@ -336,13 +336,7 @@ public class ZmzCrawlerService {
         params.put("remember", "1");
         params.put("url_back", "http://www.zimuzu.tv/user/login");
 
-        MyHttpResponse response;
-
-        if (proxy == null) {
-            response = MyHttpClient.getHttpResponse(new HttpPost(url), params, "");
-        } else {
-            response = MyHttpClient.getHttpResponse(new HttpPost(url), params, "", proxy.getHost(), proxy.getPort(), proxy.getType());
-        }
+        MyHttpResponse response = getMyHttpResponse(proxy, new HttpPost(url), params, null);
 
         return response;
     }

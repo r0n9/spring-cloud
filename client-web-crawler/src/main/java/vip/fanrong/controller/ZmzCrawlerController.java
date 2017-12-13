@@ -28,22 +28,21 @@ public class ZmzCrawlerController {
     @Autowired
     private ProxyCrawlerService proxyCrawlerService;
 
-    @ApiOperation(value = "Resource Tops", notes = "Resource Tops")
-    @RequestMapping(value = "/resource/tops", method = RequestMethod.GET)
-    public ObjectNode getZmzResourceTops() {
-        List<ZmzResourceTop> list = zmzCrawlerService.getZmzResourceTops();
-        ObjectNode objectNode = JsonUtil.createObjectNode();
-        objectNode.put("count", list.size());
-        objectNode.putPOJO("resource", list);
-        return objectNode;
-    }
-
     @ApiOperation(value = "Load Resource Tops", notes = "Load Resource Tops")
     @RequestMapping(value = "/resource/loadtops", method = RequestMethod.POST)
     public ObjectNode loadZmzResourceTops() {
-        int loaded = zmzCrawlerService.loadZmzResourceTops();
+        ProxyConfig proxyConfig = proxyCrawlerService.getRandomValidatedProxy();
+        int loaded = zmzCrawlerService.loadZmzResourceTops(proxyConfig); // 获取热门资源列表、入库
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        int newResources = zmzCrawlerService.loadLatestTopMovieResources(proxyConfig); // 获取电影资源信息、入库
         ObjectNode node = JsonUtil.createObjectNode();
-        return node.put("loaded", loaded);
+        node.put("tops", loaded);
+        node.put("newResources", newResources);
+        return node;
     }
 
     @ApiOperation(value = "Register a random account")
