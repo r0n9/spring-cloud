@@ -11,6 +11,8 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -53,7 +55,7 @@ public class MyHttpClient {
         return myHttpResponse.getStatusLine().getStatusCode();
     }
 
-    private static CloseableHttpClient getHttpClient() {
+    private static CloseableHttpClient getHttpClientForSocksProxy() {
         Registry<ConnectionSocketFactory> reg = RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("http", new MyConnectionSocketFactory())
                 .register("https", new MySSLConnectionSocketFactory(SSLContexts.createSystemDefault())).build();
@@ -86,14 +88,13 @@ public class MyHttpClient {
 
     public static MyHttpResponse getHttpResponse(HttpRequestBase request,
                                                  Map<String, String> map,
-                                                 String cookie) {
-        setRequest(request, map, cookie);
+                                                 List<Cookie> cookies) {
+        setRequest(request, map);
 
         // 执行post请求操作，并拿到结果
         LOG.info("Executing request " + request + " via no proxy ");
         CloseableHttpClient httpClient = HttpClients.createDefault();
-        try {
-            CloseableHttpResponse httpResponse = httpClient.execute(request);
+        try (CloseableHttpResponse httpResponse = httpClient.execute(request)) {
             LOG.info("----------------------------------------");
             LOG.info("Response Status: " + String.valueOf(httpResponse.getStatusLine()));
             MyHttpResponse myHttpResponse = new MyHttpResponse();
@@ -113,14 +114,11 @@ public class MyHttpClient {
         }
     }
 
-    private static void setRequest(HttpRequestBase request,
-                                   Map<String, String> map,
-                                   String cookie) {
+    private static void setRequest(HttpRequestBase request, Map<String, String> map) {
         request.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
         request.setHeader("Accept-Encoding", "gzip, deflate");
         request.setHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7");
         request.setHeader("User-Agent", USER_AGENT); // 设置请求头消息User-Agent
-        request.addHeader("Cookie", cookie);
 
         if (request instanceof HttpPost) {
             List<NameValuePair> params = new ArrayList<>();
@@ -138,52 +136,53 @@ public class MyHttpClient {
         }
     }
 
-
-    public static MyHttpResponse getHttpResponse(HttpRequestBase request,
-                                                 Map<String, String> map,
-                                                 String cookie,
-                                                 String proxyHost, int proxyPort, String proxyType) {
-        setRequest(request, map, cookie);
-
-        StringBuilder htmlBuilder = new StringBuilder();
-
+    public static CloseableHttpClient getHttpClientWithProxy(HttpClientContext context, String proxyHost, int proxyPort, String proxyType) {
+        BasicCookieStore basicCookieStore = new BasicCookieStore();
         if ("SOCKS".equalsIgnoreCase(proxyType)) {
-            CloseableHttpClient httpclient = getHttpClient();
-            try {
-                InetSocketAddress socksaddr = new InetSocketAddress(proxyHost, proxyPort);
-                HttpClientContext context = HttpClientContext.create();
-                context.setAttribute("socks.address", socksaddr);
+            Registry<ConnectionSocketFactory> reg = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register("http", new MyConnectionSocketFactory())
+                    .register("https", new MySSLConnectionSocketFactory(SSLContexts.createSystemDefault())).build();
+            PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(reg, new FakeDnsResolver());
 
+            CloseableHttpClient httpclient = HttpClients.custom()
+                    .setConnectionManager(cm)
+                    .setDefaultCookieStore(basicCookieStore)
+                    .build();
 
-                LOG.info("Executing request " + request + " via SOCKS proxy " + socksaddr);
-                try (CloseableHttpResponse httpResponse = httpclient.execute(request, context)) {
-                    LOG.info("----------------------------------------");
-                    LOG.info("Response Status: " + String.valueOf(httpResponse.getStatusLine()));
-                    MyHttpResponse myHttpResponse = new MyHttpResponse();
-                    myHttpResponse.setHeaders(httpResponse.getAllHeaders());
-                    myHttpResponse.setHtml(getHtmlFromResponse(httpResponse));
-                    myHttpResponse.setStatusLine(httpResponse.getStatusLine());
-                    return myHttpResponse;
-                } catch (IOException e) {
-                    return null;
-                }
-            } finally {
-                try {
-                    httpclient.close();
-                } catch (IOException e) {
-                    LOG.error(e.getMessage());
-                }
-            }
+            InetSocketAddress socksaddr = new InetSocketAddress(proxyHost, proxyPort);
+            context.setAttribute("socks.address", socksaddr);
+
+            return httpclient;
+
         } else if ("HTTP".equalsIgnoreCase(proxyType)) {
             HttpClientBuilder hcBuilder = HttpClients.custom();
             HttpHost proxy = new HttpHost(proxyHost, proxyPort, "http");
             DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
             hcBuilder.setRoutePlanner(routePlanner);
-            CloseableHttpClient httpClient = hcBuilder.build();
-            LOG.info("Executing request " + request + " via HTTP proxy " + proxy);
+            CloseableHttpClient httpClient = hcBuilder
+                    .setDefaultCookieStore(basicCookieStore)
+                    .build();
 
-            try {
-                HttpResponse httpResponse = httpClient.execute(request);
+            return httpClient;
+        } else {
+            LOG.error("Unsupported proxy type: " + proxyType);
+            return null;
+        }
+    }
+
+
+    public static MyHttpResponse getHttpResponse(HttpRequestBase request,
+                                                 Map<String, String> map,
+                                                 List<Cookie> cookies,
+                                                 String proxyHost, int proxyPort, String proxyType) {
+        setRequest(request, map);
+
+        StringBuilder htmlBuilder = new StringBuilder();
+        HttpClientContext context = HttpClientContext.create();
+        CloseableHttpClient httpclient = getHttpClientWithProxy(context, proxyHost, proxyPort, proxyType);
+        try {
+            LOG.info("Executing request " + request + " via " + proxyType + " proxy " + proxyHost + ":" + proxyPort);
+            try (CloseableHttpResponse httpResponse = httpclient.execute(request, context)) {
                 LOG.info("----------------------------------------");
                 LOG.info("Response Status: " + String.valueOf(httpResponse.getStatusLine()));
                 MyHttpResponse myHttpResponse = new MyHttpResponse();
@@ -191,19 +190,15 @@ public class MyHttpClient {
                 myHttpResponse.setHtml(getHtmlFromResponse(httpResponse));
                 myHttpResponse.setStatusLine(httpResponse.getStatusLine());
                 return myHttpResponse;
-            } catch (Exception e) {
-                LOG.error(e.getMessage());
+            } catch (IOException e) {
                 return null;
-            } finally {
-                try {
-                    httpClient.close();
-                } catch (IOException e) {
-                    LOG.error(e.getMessage());
-                }
             }
-        } else {
-            LOG.error("Unsupported proxy type: " + proxyType);
-            return null;
+        } finally {
+            try {
+                httpclient.close();
+            } catch (IOException e) {
+                LOG.error(e.getMessage());
+            }
         }
     }
 

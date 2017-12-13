@@ -1,11 +1,17 @@
 package vip.fanrong.service;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.*;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,6 +26,8 @@ import vip.fanrong.mapper.ZmzAccountMapper;
 import vip.fanrong.mapper.ZmzResourceTopMapper;
 import vip.fanrong.model.*;
 
+import java.io.IOException;
+import java.net.URI;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -58,7 +66,7 @@ public class ZmzCrawlerService {
     public MyHttpResponse getMyHttpResponse(ProxyConfig proxy,
                                             HttpRequestBase request,
                                             Map<String, String> map,
-                                            String cookie) {
+                                            List<Cookie> cookie) {
         MyHttpResponse response;
         if (null == proxy) {
             response = MyHttpClient.getHttpResponse(request, map, cookie);
@@ -328,17 +336,57 @@ public class ZmzCrawlerService {
     }
 
     public MyHttpResponse zmzAccountLogin(ProxyConfig proxy, ZmzAccount account) {
-        String url = "http://www.zimuzu.tv/User/Login/ajaxLogin";
+        HttpClientContext context = HttpClientContext.create();
 
-        Map<String, String> params = new HashMap<>();
-        params.put("account", account.getNickname());
-        params.put("password", account.getPassword());
-        params.put("remember", "1");
-        params.put("url_back", "http://www.zimuzu.tv/user/login");
+        CloseableHttpClient httpclient;
+        if (proxy == null) {
+            httpclient = HttpClients.createDefault();
+        } else {
+            httpclient = MyHttpClient.getHttpClientWithProxy(context, proxy.getHost(), proxy.getPort(), proxy.getType());
+        }
 
-        MyHttpResponse response = getMyHttpResponse(proxy, new HttpPost(url), params, null);
+        try {
 
-        return response;
+            HttpGet getCookie = new HttpGet("http://www.zimuzu.tv/user/login");
+            CloseableHttpResponse response1 = httpclient.execute(getCookie);
+            response1.close();
+
+            String loginUrl = "http://www.zimuzu.tv/User/Login/ajaxLogin";
+
+            HttpUriRequest postLogin = RequestBuilder.post().setUri(new URI(loginUrl))
+                    .addParameter("account", account.getNickname())
+                    .addParameter("password", account.getPassword())
+                    .addParameter("remember", "1")
+                    .addParameter("url_back", "http://www.zimuzu.tv/user/login")
+                    .build();
+            CloseableHttpResponse response2 = httpclient.execute(postLogin);
+            LOGGER.info(StringEscapeUtils.unescapeJava(EntityUtils.toString(response2.getEntity())));
+            response2.close();
+
+            String getUserInfoUrl = "http://www.zimuzu.tv/user/login/getCurUserTopInfo";
+            HttpUriRequest postExamMark = RequestBuilder.post().setUri(new URI(getUserInfoUrl))
+                    .build();
+            CloseableHttpResponse response = httpclient.execute(postExamMark);
+            StatusLine statusLine = response.getStatusLine();
+            HttpEntity entity = response.getEntity();
+            String json = StringEscapeUtils.unescapeJava(EntityUtils.toString(entity));
+            EntityUtils.consume(entity);
+            LOGGER.info(json);
+
+            MyHttpResponse myHttpResponse = new MyHttpResponse();
+            myHttpResponse.setHtml(json);
+            myHttpResponse.setStatusLine(statusLine);
+            return myHttpResponse;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                httpclient.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
     public void zmzAccountLoginAll() {
@@ -350,7 +398,7 @@ public class ZmzCrawlerService {
 
         ZmzAccount firstAccount = accounts.get(0);
         ProxyConfig proxy = proxyCrawlerService.getRandomValidatedProxy();
-        while (!zmzAccountLogin(firstAccount, proxy)) {
+        while (!zmzAccountLoginTry(firstAccount, proxy)) {
             proxy = proxyCrawlerService.getRandomValidatedProxy();
         }
 
@@ -394,7 +442,7 @@ public class ZmzCrawlerService {
         public Boolean call() throws Exception {
             MyHttpResponse response = zmzAccountLogin(proxy, account);
             if (response != null && response.getHtml() != null) {
-                if (StringUtils.contains(response.getHtml(), "登录成功")) {
+                if (StringUtils.contains(response.getHtml(), "common_group_name")) {
                     LOGGER.info("Login succeeded for account: " + account);
                     account.setLastLoginDate(DateTimeUtil.getTimeNowGMT8());
                     zmzAccountMapper.update(account);
@@ -405,7 +453,7 @@ public class ZmzCrawlerService {
         }
     }
 
-    private boolean zmzAccountLogin(ZmzAccount account, ProxyConfig proxy) {
+    private boolean zmzAccountLoginTry(ZmzAccount account, ProxyConfig proxy) {
         ExecutorService service = null;
         try {
             service = Executors.newSingleThreadExecutor();

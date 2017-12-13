@@ -5,8 +5,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import vip.fanrong.common.MyHttpResponse;
 import vip.fanrong.mapper.MovieResourceMapper;
 import vip.fanrong.model.MovieResource;
+import vip.fanrong.model.ZmzAccount;
 import vip.fanrong.model.ZmzResourceTop;
 
 import java.util.List;
@@ -20,7 +22,6 @@ public class ZmzCrawlerServiceTests {
 
     @Autowired
     MovieResourceMapper movieResourceMapper;
-
 
     @Test
     public void testGetZmzResourceTops() {
