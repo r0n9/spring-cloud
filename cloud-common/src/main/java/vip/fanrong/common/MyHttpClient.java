@@ -191,6 +191,7 @@ public class MyHttpClient {
                 myHttpResponse.setStatusLine(httpResponse.getStatusLine());
                 return myHttpResponse;
             } catch (IOException e) {
+                LOG.error(e.getMessage());
                 return null;
             }
         } finally {
