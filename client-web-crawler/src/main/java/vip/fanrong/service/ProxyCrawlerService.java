@@ -113,7 +113,7 @@ public class ProxyCrawlerService {
             for (Future<ProxyConfig> task : tasks) {
                 ProxyConfig proxyConfig = null;
                 try {
-                    proxyConfig = task.get(2, TimeUnit.MINUTES);
+                    proxyConfig = task.get(1, TimeUnit.MINUTES);
                 } catch (TimeoutException e) {
                     if (null == proxyConfig) {
                         continue;
