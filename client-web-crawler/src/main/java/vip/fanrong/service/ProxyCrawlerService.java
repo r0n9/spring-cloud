@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import vip.fanrong.common.DateTimeUtil;
 import vip.fanrong.common.MyHttpClient;
 import vip.fanrong.common.MyHttpResponse;
 import vip.fanrong.mapper.ProxyConfigMapper;
@@ -118,7 +119,7 @@ public class ProxyCrawlerService {
                     if (null == proxyConfig) {
                         continue;
                     }
-                    proxyConfig.setStatus(String.valueOf(HttpStatus.SC_REQUEST_TIMEOUT));
+                    proxyConfig.setStatus(String.valueOf(HttpStatus.SC_REQUEST_TIMEOUT));// FIXME it would never reach here
                 } catch (Exception e) {
                     if (null == proxyConfig) {
                         continue;
@@ -126,7 +127,7 @@ public class ProxyCrawlerService {
                     proxyConfig.setStatus(String.valueOf(HttpStatus.SC_REQUEST_TIMEOUT));
                 }
 
-                proxyConfig.setStatusUpdateTime(Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime());
+                proxyConfig.setStatusUpdateTime(DateTimeUtil.getTimeNowGMT8());
                 proxyConfigMapper.update(proxyConfig);
 
                 if (String.valueOf(HttpStatus.SC_OK).equalsIgnoreCase(proxyConfig.getStatus())) {
@@ -184,7 +185,7 @@ public class ProxyCrawlerService {
             proxy.setPort(Integer.parseInt(m2.group(1)));
             proxy.setType("SOCKS");
             proxy.setLocation(tds.get(3).getElementsByTag("a").first().text());
-            proxy.setInsertTime(Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime());
+            proxy.setInsertTime(DateTimeUtil.getTimeNowGMT8());
             results.add(proxy);
         }
 
@@ -236,7 +237,7 @@ public class ProxyCrawlerService {
             }
             proxy.setType(type);
             proxy.setLocation(tds.get(3).text());
-            proxy.setInsertTime(Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime());
+            proxy.setInsertTime(DateTimeUtil.getTimeNowGMT8());
             results.add(proxy);
         }
 

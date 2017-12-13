@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import vip.fanrong.common.DateTimeUtil;
 import vip.fanrong.common.MyHttpClient;
 import vip.fanrong.common.MyHttpResponse;
 import vip.fanrong.mapper.MovieResourceMapper;
@@ -59,7 +60,7 @@ public class ZmzCrawlerService {
             return null;
         }
         String html = response.getHtml();
-        Date getTime = Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime();
+        Date getTime = DateTimeUtil.getTimeNowGMT8();
         List<ZmzResourceTop> list = parseZmzResourceTops(html, getTime);
         String getTimeStr = ZonedDateTime.ofInstant(getTime.toInstant(), ZoneId.of("GMT+08:00")).format(FORMATTER_SIMPLE);
         LOGGER.info("成功获取最新资源数量为：" + list.size() + " 获取时间：" + getTimeStr);
@@ -242,7 +243,7 @@ public class ZmzCrawlerService {
         movieResource.setResourceId(resouceId);
         movieResource.setSource(source);
         movieResource.setResources(resourceFiles);
-        movieResource.setInsertTime(Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime());
+        movieResource.setInsertTime(DateTimeUtil.getTimeNowGMT8());
         return movieResource;
     }
 
@@ -317,7 +318,7 @@ public class ZmzCrawlerService {
 
         if (isSuccess) {
             zmzAccount.setIsValide(1);
-            zmzAccount.setRegisterDate(Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime());
+            zmzAccount.setRegisterDate(DateTimeUtil.getTimeNowGMT8());
             zmzAccountMapper.insert(zmzAccount);
         } else {
             return null;
@@ -401,7 +402,7 @@ public class ZmzCrawlerService {
             if (response != null && response.getHtml() != null) {
                 if (StringUtils.contains(response.getHtml(), "登录成功")) {
                     LOGGER.info("Login succeeded for account: " + account);
-                    account.setLastLoginDate(Calendar.getInstance(TimeZone.getTimeZone("GMT+08:00")).getTime());
+                    account.setLastLoginDate(DateTimeUtil.getTimeNowGMT8());
                     zmzAccountMapper.update(account);
                     return true;
                 }
