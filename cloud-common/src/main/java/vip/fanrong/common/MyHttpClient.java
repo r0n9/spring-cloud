@@ -41,7 +41,7 @@ public class MyHttpClient {
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36";
 
     public static int testProxy(String proxyHost, int proxyPort, String proxyType) {
-        HttpGet request = new HttpGet("http://baidu.com/");
+        HttpGet request = new HttpGet("http://www.baidu.com/");
         MyHttpResponse myHttpResponse = getHttpResponse(request, null, null, proxyHost, proxyPort, proxyType);
         if (null == myHttpResponse) {
             return HttpStatus.SC_INTERNAL_SERVER_ERROR;
