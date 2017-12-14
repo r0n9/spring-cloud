@@ -22,6 +22,7 @@ import vip.fanrong.common.DateTimeUtil;
 import vip.fanrong.common.MyHttpClient;
 import vip.fanrong.common.MyHttpResponse;
 import vip.fanrong.mapper.MovieResourceMapper;
+import vip.fanrong.mapper.TvResourceMapper;
 import vip.fanrong.mapper.ZmzAccountMapper;
 import vip.fanrong.mapper.ZmzResourceTopMapper;
 import vip.fanrong.model.*;
@@ -58,6 +59,9 @@ public class ZmzCrawlerService {
 
     @Autowired
     private MovieResourceMapper movieResourceMapper;
+
+    @Autowired
+    private TvResourceMapper tvResourceMapper;
 
     @Autowired
     private ProxyCrawlerService proxyCrawlerService;
@@ -170,27 +174,203 @@ public class ZmzCrawlerService {
         return count;
     }
 
-    public MovieResource getTVResourceByZmzResourceId(ProxyConfig proxy, String zmzResourceId) {
-        // "http://www.zimuzu.tv/resource/index_json/rid/11057/channel/tv"
-        String sourceUrl = "http://www.zimuzu.tv/resource/index_json/rid/" + zmzResourceId + "/channel/tv";
-        // TODO
-        return null;
-    }
 
+    class Toggle {
+        String name;
+        String aria;
 
-    private List<TvResource> parseTvResource(String html, String resouceId, String source) {
-        // TODO
-        if (StringUtils.isBlank(html)) {
-            return null;
+        Toggle(String name, String aria) {
+            this.name = name;
+            this.aria = aria;
         }
 
-        Document doc = Jsoup.parse(html);
-        doc.select("ul.tab-header.tab-side");
+        @Override
+        public String toString() {
+            return "Toggle{" +
+                    "name='" + name + '\'' +
+                    ", aria='" + aria + '\'' +
+                    '}';
+        }
+    }
+
+    class Season {
+        String name;
+        String aria;
+
+        public Season(String name, String aria) {
+            this.name = name;
+            this.aria = aria;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getAria() {
+            return aria;
+        }
+
+        public void setAria(String aria) {
+            this.aria = aria;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Season season = (Season) o;
+
+            if (name != null ? !name.equals(season.name) : season.name != null) return false;
+            return aria != null ? aria.equals(season.aria) : season.aria == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = name != null ? name.hashCode() : 0;
+            result = 31 * result + (aria != null ? aria.hashCode() : 0);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Season{" +
+                    "name='" + name + '\'' +
+                    ", aria='" + aria + '\'' +
+                    '}';
+        }
+    }
+
+    public void loadTVResource(ProxyConfig proxy, ZmzResourceTop zmzResourceTop) {
+
+        Matcher matcher = URL_PATTERN_RESOURCE_ID.matcher(zmzResourceTop.getSrc());
+        if (!matcher.find()) return;
+        String resourceId = matcher.group(1);
+
+        // e.g. "http://www.zimuzu.tv/resource/index_json/rid/11057/channel/tv"
+        String sourceUrl = "http://www.zimuzu.tv/resource/index_json/rid/" + resourceId + "/channel/tv";
+
+        MyHttpResponse response = MyHttpClient.getHttpResponse(new HttpGet(sourceUrl), null, null);
 
 
-        return null;
+        if (null == response) {
+            return;
+        }
+
+        matcher = URL_PATTERN_XIAZAI003.matcher(response.getHtml());
+
+        if (!matcher.find()) {
+            return;
+        }
+
+        sourceUrl = matcher.group(1);
+        LOGGER.info("Resource page url: " + sourceUrl);
+        if (null == proxy) {
+            response = MyHttpClient.getHttpResponse(new HttpGet(sourceUrl), null, null);
+        } else {
+            response = MyHttpClient.getHttpResponse(new HttpGet(sourceUrl), null, null,
+                    proxy.getHost(), proxy.getPort(), proxy.getType());
+        }
 
 
+        if (null == response) {
+            return;
+        }
+
+        // 解析
+        Document doc = Jsoup.parse(response.getHtml());
+        Element metaElement = doc.selectFirst("ul.tab-header.tab-side");
+
+        Map<Season, List<Toggle>> seasonToToggles = new HashMap<>();
+
+        for (Element li : metaElement.select("li:has(ul)")) {
+            List<Toggle> toggles = new ArrayList<>();
+            seasonToToggles.put(new Season(li.selectFirst("a").text(), li.selectFirst("a").attr("aria-controls")), toggles);
+            int i = 0;
+            for (Element toggle : li.select("li")) {
+                if (0 == i++) {
+                    continue;
+                }
+                Element a = toggle.selectFirst("a");
+                toggles.add(new Toggle(a.text(), a.attr("aria-controls")));
+            }
+        }
+
+//        System.out.println(seasonToToggles);
+
+
+        for (Season season : seasonToToggles.keySet()) { // by season
+            if ("周边资源".equalsIgnoreCase(season.getName())) {
+                continue;
+            }
+            List<Toggle> toggles = seasonToToggles.get(season);
+            LOGGER.info("Start to deal with " + season.getName());
+
+            Element element = doc.getElementById(season.aria);
+            for (Toggle toggle : toggles) { // by toggles
+                if (toggle.aria.endsWith("APP")) {
+                    continue;
+                }
+                LOGGER.info("Start to deal with " + zmzResourceTop.getName() + " - " + season.getName() + " - " + toggle.name);
+                Element elementOfToggle = element.selectFirst("div#" + toggle.aria);
+
+                Elements eps = elementOfToggle.select("li:has(span.episode)");
+                for (Element ep : eps) {
+                    String episodeName = ep.selectFirst("span.episode").text();
+                    LOGGER.info(episodeName);
+                    if ("".equalsIgnoreCase(episodeName)) { // TODO 判断是否已入库
+                        LOGGER.debug("");
+                        continue;
+                    }
+
+                    String fileName = ep.selectFirst("span.filename").text();
+                    String fileSize = ep.selectFirst("span.filesize").text();
+
+
+                    Elements elements = ep.select("a.btn");
+                    if (null == elements) {
+                        LOGGER.error("element not found: a.btn");
+                        continue;
+                    }
+
+                    for (Element el : elements) {
+                        String downloadLink = el.attr("href");
+                        if (StringUtils.isBlank(downloadLink)) {
+                            LOGGER.error("element not found: href");
+                            continue;
+                        }
+                        if (null == el.selectFirst("p.desc")) {
+                            LOGGER.error("element not found: p.desc");
+                            continue;
+                        }
+
+                        TvResource tvResource = new TvResource();
+                        tvResource.setResourceId(resourceId);
+                        tvResource.setSource("zmz");
+                        tvResource.setName(zmzResourceTop.getName());
+                        tvResource.setAltName(zmzResourceTop.getNameEn());
+                        tvResource.setEpisode(episodeName);
+                        tvResource.setSeason(season.name);
+                        tvResource.setToggle(toggle.name);
+                        tvResource.setFileName(fileName);
+                        tvResource.setFileSize(fileSize);
+                        String nameChn = el.selectFirst("p.desc").text();
+                        tvResource.setDownloadType(nameChn);
+                        tvResource.setDownloadLink(downloadLink);
+                        tvResource.setInsertTime(DateTimeUtil.getTimeNowGMT8());
+
+                        tvResourceMapper.insert(tvResource);
+                    }
+                }
+                LOGGER.info("End to deal with " + zmzResourceTop.getName() + " - " + season.getName() + " - " + toggle.name);
+
+            }
+            LOGGER.info("End to deal with " + zmzResourceTop.getName() + " - " + season.getName());
+        }
     }
 
     public MovieResource getMovieResourceByZmzResourceId(ProxyConfig proxy, String zmzResourceId) {

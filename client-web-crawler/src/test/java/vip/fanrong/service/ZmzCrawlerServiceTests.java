@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import vip.fanrong.common.MyHttpResponse;
 import vip.fanrong.mapper.MovieResourceMapper;
+import vip.fanrong.mapper.ZmzResourceTopMapper;
 import vip.fanrong.model.MovieResource;
 import vip.fanrong.model.ZmzAccount;
 import vip.fanrong.model.ZmzResourceTop;
@@ -22,6 +23,9 @@ public class ZmzCrawlerServiceTests {
 
     @Autowired
     MovieResourceMapper movieResourceMapper;
+
+    @Autowired
+    ZmzResourceTopMapper zmzResourceTopMapper;
 
     @Test
     public void testGetZmzResourceTops() {
@@ -55,5 +59,16 @@ public class ZmzCrawlerServiceTests {
     public void testLoadLatestTopMovieResources() {
         int count = zmzCrawlerService.loadLatestTopMovieResources(null);
         System.out.println("Found " + count);
+    }
+
+    @Test
+    public void testLoadLatestTopTvResources() {
+        List<ZmzResourceTop> list = zmzResourceTopMapper.selectLatest();
+        for (ZmzResourceTop top : list) {
+            if ("美剧".equalsIgnoreCase(top.getType())) {
+                zmzCrawlerService.loadTVResource(null, top);
+                break;
+            }
+        }
     }
 }
