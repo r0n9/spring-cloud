@@ -170,6 +170,29 @@ public class ZmzCrawlerService {
         return count;
     }
 
+    public MovieResource getTVResourceByZmzResourceId(ProxyConfig proxy, String zmzResourceId) {
+        // "http://www.zimuzu.tv/resource/index_json/rid/11057/channel/tv"
+        String sourceUrl = "http://www.zimuzu.tv/resource/index_json/rid/" + zmzResourceId + "/channel/tv";
+        // TODO
+        return null;
+    }
+
+
+    private List<TvResource> parseTvResource(String html, String resouceId, String source) {
+        // TODO
+        if (StringUtils.isBlank(html)) {
+            return null;
+        }
+
+        Document doc = Jsoup.parse(html);
+        doc.select("ul.tab-header.tab-side");
+
+
+        return null;
+
+
+    }
+
     public MovieResource getMovieResourceByZmzResourceId(ProxyConfig proxy, String zmzResourceId) {
         String sourceUrl = "http://www.zimuzu.tv/resource/index_json/rid/" + zmzResourceId + "/channel/movie";
         HttpGet request = new HttpGet(sourceUrl);
@@ -206,6 +229,7 @@ public class ZmzCrawlerService {
 
 
     }
+
 
     private MovieResource getMovieResource(String html, String resouceId, String source) {
         if (StringUtils.isBlank(html)) {
