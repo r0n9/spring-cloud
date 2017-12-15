@@ -56,6 +56,12 @@ public class ZmzCrawlerServiceTests {
     }
 
     @Test
+    public void testGetMovieResourceByZmzResourceId() {
+        MovieResource movieResource = zmzCrawlerService.getMovieResourceByZmzResourceId(null, "10840");
+        System.out.println(movieResource);
+    }
+
+    @Test
     public void testLoadLatestTopMovieResources() {
         int count = zmzCrawlerService.loadLatestTopMovieResources(null);
         System.out.println("Found " + count);
@@ -63,12 +69,6 @@ public class ZmzCrawlerServiceTests {
 
     @Test
     public void testLoadLatestTopTvResources() {
-        List<ZmzResourceTop> list = zmzResourceTopMapper.selectLatest();
-        for (ZmzResourceTop top : list) {
-            if ("日剧".equalsIgnoreCase(top.getType()) || "美剧".equalsIgnoreCase(top.getType())
-                    || "英剧".equalsIgnoreCase(top.getType()) || "德剧".equalsIgnoreCase(top.getType())) {
-                zmzCrawlerService.loadTVResource(null, top);
-            }
-        }
+        zmzCrawlerService.loadLatestTopTVResources(null);
     }
 }

@@ -31,7 +31,9 @@ public class ScheduleConfiguration implements SchedulingConfigurer {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            zmzCrawlerService.loadLatestTopMovieResources(null); // 获取电影资源信息、入库
+            zmzCrawlerService.loadLatestTopMovieResources(null); // 获取最新热门电影资源信息、入库
+
+            zmzCrawlerService.loadLatestTopTVResources(null); // 获取最新热门电视剧资源信息、入库
         }, "0 0 6,18 * * ?"); // 每天6点和18点
 
         // ZMZ账号登陆

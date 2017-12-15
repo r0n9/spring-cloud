@@ -251,6 +251,17 @@ public class ZmzCrawlerService {
         return sb.toString().hashCode();
     }
 
+    public void loadLatestTopTVResources(ProxyConfig proxy) {
+        List<ZmzResourceTop> list = zmzResourceTopMapper.selectLatest();
+        for (ZmzResourceTop top : list) {
+            if ("日剧".equalsIgnoreCase(top.getType()) || "美剧".equalsIgnoreCase(top.getType())
+                    || "英剧".equalsIgnoreCase(top.getType()) || "德剧".equalsIgnoreCase(top.getType())
+                    || "纪录片".equalsIgnoreCase(top.getType())) {
+                loadTVResource(proxy, top);
+            }
+        }
+    }
+
     public void loadTVResource(ProxyConfig proxy, ZmzResourceTop zmzResourceTop) {
 
         Matcher matcher = URL_PATTERN_RESOURCE_ID.matcher(zmzResourceTop.getSrc());
@@ -380,10 +391,7 @@ public class ZmzCrawlerService {
                         tvResourceMapper.insert(tvResource);
                     }
                 }
-                LOGGER.info("End to deal with " + zmzResourceTop.getName() + " - " + season.getName() + " - " + toggle.name);
-
             }
-            LOGGER.info("End to deal with " + zmzResourceTop.getName() + " - " + season.getName());
         }
     }
 
@@ -596,7 +604,7 @@ public class ZmzCrawlerService {
             myHttpResponse.setStatusLine(statusLine);
             return myHttpResponse;
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); // TODO 这里需要解决，可以递归登陆今日未登陆成功账号
         } finally {
             try {
                 httpclient.close();

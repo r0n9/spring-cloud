@@ -1,5 +1,6 @@
 package vip.fanrong.service;
 
+import com.netflix.ribbon.proxy.annotation.Http;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -38,7 +39,30 @@ public class ProxyCrawlerService {
     private static boolean isValidateProxyRunning = false;
 
     Integer testProxy(ProxyConfig proxyConfig) {
-        int status = MyHttpClient.testProxy(proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
+
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        FutureTask<Integer> futureTask = new FutureTask<Integer>(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                int status = MyHttpClient.testProxy(proxyConfig.getHost(), proxyConfig.getPort(), proxyConfig.getType());
+                return status;
+            }
+        });
+        service.submit(futureTask);
+
+        Integer status;
+        try {
+            status = futureTask.get(45, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+        } catch (ExecutionException e) {
+            status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+        } catch (TimeoutException e) {
+            status = HttpStatus.SC_GATEWAY_TIMEOUT;
+        } finally {
+            service.shutdown();
+        }
+
         return status;
     }
 
