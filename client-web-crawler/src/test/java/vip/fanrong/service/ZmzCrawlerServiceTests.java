@@ -65,9 +65,9 @@ public class ZmzCrawlerServiceTests {
     public void testLoadLatestTopTvResources() {
         List<ZmzResourceTop> list = zmzResourceTopMapper.selectLatest();
         for (ZmzResourceTop top : list) {
-            if ("美剧".equalsIgnoreCase(top.getType())) {
+            if ("日剧".equalsIgnoreCase(top.getType()) || "美剧".equalsIgnoreCase(top.getType())
+                    || "英剧".equalsIgnoreCase(top.getType()) || "德剧".equalsIgnoreCase(top.getType())) {
                 zmzCrawlerService.loadTVResource(null, top);
-                break;
             }
         }
     }

@@ -197,7 +197,7 @@ public class ZmzCrawlerService {
         String name;
         String aria;
 
-        public Season(String name, String aria) {
+        Season(String name, String aria) {
             this.name = name;
             this.aria = aria;
         }
@@ -245,11 +245,26 @@ public class ZmzCrawlerService {
         }
     }
 
+    private int getHashIndex(String source, String resourceId, String season, String episode, String toggle) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(source).append(resourceId).append(season).append(episode).append(toggle);
+        return sb.toString().hashCode();
+    }
+
     public void loadTVResource(ProxyConfig proxy, ZmzResourceTop zmzResourceTop) {
 
         Matcher matcher = URL_PATTERN_RESOURCE_ID.matcher(zmzResourceTop.getSrc());
         if (!matcher.find()) return;
         String resourceId = matcher.group(1);
+
+        List<TvResource> resourceIndexes = tvResourceMapper.selectResourceIndex("zmz", resourceId);
+        List<Integer> hashList = new ArrayList<>();
+        if (null != resourceIndexes) {
+            for (TvResource resourceIndex : resourceIndexes) {
+                hashList.add(getHashIndex(resourceIndex.getSource(), resourceIndex.getResourceId(),
+                        resourceIndex.getSeason(), resourceIndex.getEpisode(), resourceIndex.getToggle()));
+            }
+        }
 
         // e.g. "http://www.zimuzu.tv/resource/index_json/rid/11057/channel/tv"
         String sourceUrl = "http://www.zimuzu.tv/resource/index_json/rid/" + resourceId + "/channel/tv";
@@ -321,15 +336,14 @@ public class ZmzCrawlerService {
                 Elements eps = elementOfToggle.select("li:has(span.episode)");
                 for (Element ep : eps) {
                     String episodeName = ep.selectFirst("span.episode").text();
-                    LOGGER.info(episodeName);
-                    if ("".equalsIgnoreCase(episodeName)) { // TODO 判断是否已入库
-                        LOGGER.debug("");
+                    // 判断是否已经入库
+                    if (hashList.contains(getHashIndex("zmz", resourceId, season.name, episodeName, toggle.name))) {
                         continue;
                     }
 
+                    LOGGER.info(episodeName + " - new");
                     String fileName = ep.selectFirst("span.filename").text();
                     String fileSize = ep.selectFirst("span.filesize").text();
-
 
                     Elements elements = ep.select("a.btn");
                     if (null == elements) {
