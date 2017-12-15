@@ -34,17 +34,17 @@ public class ScheduleConfiguration implements SchedulingConfigurer {
             zmzCrawlerService.loadLatestTopMovieResources(null); // 获取最新热门电影资源信息、入库
 
             zmzCrawlerService.loadLatestTopTVResources(null); // 获取最新热门电视剧资源信息、入库
-        }, "0 0 6,18 * * ?"); // 每天6点和18点
+        }, "0 0 */2 * * ?");
 
         // ZMZ账号登陆
         scheduledTaskRegistrar.addCronTask(() -> {
             zmzCrawlerService.zmzAccountLoginAll();
-        }, "0 50 3 * * ?"); // 每天3:50
+        }, "0 50 3,15 * * ?"); // 每天3:50
 
         // 获取Gatherproxy SOCKS代理
         scheduledTaskRegistrar.addCronTask(() -> {
             proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(null, null);
-        }, "0 0 * * * ?"); // 每个整点
+        }, "0 5 * * * ?"); //
 
         // 获取西刺代理
         scheduledTaskRegistrar.addCronTask(() -> {
@@ -55,7 +55,7 @@ public class ScheduleConfiguration implements SchedulingConfigurer {
         // 清洗验证代理
         scheduledTaskRegistrar.addCronTask(() -> {
             proxyCrawlerService.validateProxy(100);
-        }, "0 20 * * * ?"); // 20分
+        }, "0 15 * * * ?"); // 20分
     }
 
 }
