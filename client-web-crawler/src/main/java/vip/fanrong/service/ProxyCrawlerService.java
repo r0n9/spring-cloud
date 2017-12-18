@@ -1,6 +1,5 @@
 package vip.fanrong.service;
 
-import com.netflix.ribbon.proxy.annotation.Http;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;

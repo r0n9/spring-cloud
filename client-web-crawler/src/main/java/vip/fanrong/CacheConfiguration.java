@@ -10,8 +10,8 @@ import org.springframework.core.io.ClassPathResource;
 /**
  * Created by Rong on 2017/8/8.
  */
-@Configuration // 为spring-boot注解，主要标注此为配置类，优先扫描。
-@EnableCaching // 标注启动了缓存
+//@Configuration // 为spring-boot注解，主要标注此为配置类，优先扫描。
+//@EnableCaching // 标注启动了缓存
 public class CacheConfiguration {
     /*
      * ehcache 主要的管理器
