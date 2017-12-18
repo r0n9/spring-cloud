@@ -29,8 +29,8 @@ public class ProxyCrawlerController {
     @ApiOperation(value = "Load proxy from Xicidaili", notes = "从西刺代理获取最新代理")
     @RequestMapping(value = "/xici/load", method = RequestMethod.POST)
     public ObjectNode loadProxyFromXicidaili(@RequestParam(required = false) String country) {
-        ProxyConfig proxyConfig = proxyCrawlerService.getRandomValidatedProxy("SOCKS");
-        int loaded = proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(proxyConfig, country);
+//        ProxyConfig proxyConfig = proxyCrawlerService.getRandomValidatedProxy();
+        int loaded = proxyCrawlerService.loadProxyConfigsFromXicidaili(null);
         ObjectNode node = JsonUtil.createObjectNode();
         return node.put("loaded", loaded);
     }
