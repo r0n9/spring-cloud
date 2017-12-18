@@ -251,21 +251,23 @@ public class ZmzCrawlerService {
         return sb.toString().hashCode();
     }
 
-    public void loadLatestTopTVResources(ProxyConfig proxy) {
+    public int loadLatestTopTVResources(ProxyConfig proxy) {
         List<ZmzResourceTop> list = zmzResourceTopMapper.selectLatest();
+        int total = 0;
         for (ZmzResourceTop top : list) {
             if ("日剧".equalsIgnoreCase(top.getType()) || "美剧".equalsIgnoreCase(top.getType())
                     || "英剧".equalsIgnoreCase(top.getType()) || "德剧".equalsIgnoreCase(top.getType())
                     || "纪录片".equalsIgnoreCase(top.getType())) {
-                loadTVResource(proxy, top);
+                total += loadTVResource(proxy, top);
             }
         }
+        return total;
     }
 
-    public void loadTVResource(ProxyConfig proxy, ZmzResourceTop zmzResourceTop) {
+    public int loadTVResource(ProxyConfig proxy, ZmzResourceTop zmzResourceTop) {
 
         Matcher matcher = URL_PATTERN_RESOURCE_ID.matcher(zmzResourceTop.getSrc());
-        if (!matcher.find()) return;
+        if (!matcher.find()) return 0;
         String resourceId = matcher.group(1);
 
         List<TvResource> resourceIndexes = tvResourceMapper.selectResourceIndex("zmz", resourceId);
@@ -284,13 +286,13 @@ public class ZmzCrawlerService {
 
 
         if (null == response) {
-            return;
+            return 0;
         }
 
         matcher = URL_PATTERN_XIAZAI003.matcher(response.getHtml());
 
         if (!matcher.find()) {
-            return;
+            return 0;
         }
 
         sourceUrl = matcher.group(1);
@@ -304,7 +306,7 @@ public class ZmzCrawlerService {
 
 
         if (null == response) {
-            return;
+            return 0;
         }
 
         // 解析
@@ -328,7 +330,7 @@ public class ZmzCrawlerService {
 
 //        System.out.println(seasonToToggles);
 
-
+        int total = 0;
         for (Season season : seasonToToggles.keySet()) { // by season
             if ("周边资源".equalsIgnoreCase(season.getName())) {
                 continue;
@@ -338,6 +340,8 @@ public class ZmzCrawlerService {
 
             Element element = doc.getElementById(season.aria);
             for (Toggle toggle : toggles) { // by toggles
+                List<TvResource> tvResourcesList = new ArrayList<>();
+
                 if (toggle.aria.endsWith("APP")) {
                     continue;
                 }
@@ -388,11 +392,16 @@ public class ZmzCrawlerService {
                         tvResource.setDownloadLink(downloadLink);
                         tvResource.setInsertTime(DateTimeUtil.getTimeNowGMT8());
 
-                        tvResourceMapper.insert(tvResource);
+                        tvResourcesList.add(tvResource);
+//                        tvResourceMapper.insert(tvResource);
                     }
                 }
+
+                int loaded = tvResourceMapper.batchInsert(tvResourcesList);
+                total += loaded;
             }
         }
+        return total;
     }
 
     public MovieResource getMovieResourceByZmzResourceId(ProxyConfig proxy, String zmzResourceId) {
@@ -615,7 +624,7 @@ public class ZmzCrawlerService {
         return null;
     }
 
-    public void zmzAccountLoginAll() {
+    public String zmzAccountLoginAll() {
         LOGGER.info("Zmz accounts login is start...");
 
         List<ZmzAccount> accounts = zmzAccountMapper.getZmzAccountAll();
@@ -631,17 +640,22 @@ public class ZmzCrawlerService {
         LOGGER.info("Proxy found: " + proxy);
         ExecutorService service = Executors.newFixedThreadPool(10);
         List<FutureTask<Boolean>> tasks = new ArrayList<>();
+
         for (int i = 1; i < accounts.size(); i++) {
             FutureTask<Boolean> task = new FutureTask<>(new ZmzAccountLoginCaller(proxy, accounts.get(i)));
             service.submit(task);
             tasks.add(task);
         }
 
+        int total = tasks.size() + 1;
+        int success = 1;
         for (FutureTask<Boolean> task : tasks) {
             try {
                 boolean result = task.get(120, TimeUnit.MINUTES);
                 if (!result) {
                     LOGGER.error("Login task not success.");
+                } else {
+                    success++;
                 }
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 LOGGER.error("Exception for login task: " + task);
@@ -652,6 +666,7 @@ public class ZmzCrawlerService {
         service.shutdown();
 
         LOGGER.info("Zmz accounts login is end...");
+        return String.valueOf(success) + "/" + String.valueOf(total);
 
     }
 

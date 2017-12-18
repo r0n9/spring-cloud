@@ -33,12 +33,12 @@ public class ProxyCrawlerServiceTests {
 
     @Test
     public void testLoadSocksProxyConfigsFromGatherproxy() {
-        ProxyConfig proxyConfig = new ProxyConfig();
-        proxyConfig.setHost("177.33.208.3");
-        proxyConfig.setPort(14181);
-        proxyConfig.setType("SOCKS");
-        int loaded = proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(proxyConfig, null);
+        int loaded = proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(null, null);
         System.out.println(loaded);
+
+        loaded = proxyCrawlerService.loadProxyConfigsFromXicidaili(null);
+        System.out.println(loaded);
+
     }
 
     @Test

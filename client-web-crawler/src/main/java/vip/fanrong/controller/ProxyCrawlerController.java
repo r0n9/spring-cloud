@@ -9,43 +9,43 @@ import vip.fanrong.common.JsonUtil;
 import vip.fanrong.model.ProxyConfig;
 import vip.fanrong.service.ProxyCrawlerService;
 
-import java.util.List;
-
 @RestController
-@RequestMapping(value = "/crawler/proxy") // parent folder for request mapping path
-@Api(value = "Proxy Crawler API", description = "v1")
+@RequestMapping(value = "/proxy") // parent folder for request mapping path
+@Api(value = "Proxy Crawler API", description = "代理相关接口")
 public class ProxyCrawlerController {
 
     @Autowired
     private ProxyCrawlerService proxyCrawlerService;
 
-    @ApiOperation(value = "SOCKS proxy from Gatherproxy", notes = "Gatherproxy")
-    @RequestMapping(value = "/socks/gatherproxy", method = RequestMethod.POST)
-    public ObjectNode getZmzResourceTops(@RequestBody(required = false) ProxyConfig proxyConfig,
-                                         @RequestParam(required = false) String country) {
-        List<ProxyConfig> list = proxyCrawlerService.getSocksProxyConfigsFromGatherproxy(proxyConfig, country);
-        ObjectNode objectNode = JsonUtil.createObjectNode();
-        objectNode.put("count", list.size());
-        objectNode.putPOJO("proxies", list);
-        return objectNode;
-    }
-
-    @ApiOperation(value = "Load SOCKS proxy from Gatherproxy", notes = "Gatherproxy")
-    @RequestMapping(value = "/socks/gatherproxy/load", method = RequestMethod.POST)
-    public ObjectNode loadZmzResourceTops(@RequestBody(required = false) ProxyConfig proxyConfig,
-                                          @RequestParam(required = false) String country) {
+    @ApiOperation(value = "Load SOCKS proxy from Gatherproxy", notes = "从Gatherproxy获取最新SOCKS代理")
+    @RequestMapping(value = "/gather/load", method = RequestMethod.POST)
+    public ObjectNode loadSocksProxyFromGatgerproxy(@RequestParam(required = false) String country) {
+        ProxyConfig proxyConfig = proxyCrawlerService.getRandomValidatedProxy("SOCKS");
         int loaded = proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(proxyConfig, country);
         ObjectNode node = JsonUtil.createObjectNode();
         return node.put("loaded", loaded);
     }
 
-    @ApiOperation(value = "Validate Proxy", notes = "Validate Proxy")
-    @RequestMapping(value = "/validate", method = RequestMethod.GET)
-    public Integer validateProxy(@RequestParam(required = false, defaultValue = "10") int limit) {
-        return proxyCrawlerService.validateProxy(limit);
+    @ApiOperation(value = "Load proxy from Xicidaili", notes = "从西刺代理获取最新代理")
+    @RequestMapping(value = "/xici/load", method = RequestMethod.POST)
+    public ObjectNode loadProxyFromXicidaili(@RequestParam(required = false) String country) {
+        ProxyConfig proxyConfig = proxyCrawlerService.getRandomValidatedProxy("SOCKS");
+        int loaded = proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(proxyConfig, country);
+        ObjectNode node = JsonUtil.createObjectNode();
+        return node.put("loaded", loaded);
     }
 
-    @ApiOperation(value = "Validate Proxy", notes = "Validate Proxy")
+    @ApiOperation(value = "Validate Proxy", notes = "清洗并验证最新获取的代理")
+    @RequestMapping(value = "/validate", method = RequestMethod.GET)
+    public ObjectNode validateProxy(@RequestParam(required = false, defaultValue = "100") int limit) {
+        int validated = proxyCrawlerService.validateProxy(limit);
+        ObjectNode node = JsonUtil.createObjectNode();
+        return node.put("validated", String.valueOf(validated));
+
+
+    }
+
+    @ApiOperation(value = "Get random validated proxy", notes = "随机获取代理并验证")
     @RequestMapping(value = "/random", method = RequestMethod.GET)
     public ObjectNode getRandomProxy() {
         ProxyConfig proxyConfig = proxyCrawlerService.getRandomValidatedProxy();

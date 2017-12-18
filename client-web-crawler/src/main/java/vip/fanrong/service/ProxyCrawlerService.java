@@ -70,6 +70,12 @@ public class ProxyCrawlerService {
         return getRandomValidatedProxy(list);
     }
 
+
+    public ProxyConfig getRandomValidatedProxy(String type) {
+        List<ProxyConfig> list = proxyConfigValidatedMapper.getValidatedProxyConfigsByLimit(30, type);
+        return getRandomValidatedProxy(list);
+    }
+
     private ProxyConfig getRandomValidatedProxy(List<ProxyConfig> list) {
         if (list == null || list.isEmpty()) {
             LOG.warn("No validated proxy!!!!!");
