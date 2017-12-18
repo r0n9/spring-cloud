@@ -44,7 +44,7 @@ public interface ProxyConfigValidatedMapper {
             @Result(column = "statusUpdateTime", property = "statusUpdateTime"),
             @Result(column = "insertTime", property = "insertTime")
     })
-    List<ProxyConfig> getValidatedProxyConfigsByLimit(@Param("limit") int limit, @Param("type") String type);
+    List<ProxyConfig> getValidatedProxyConfigsByLimitType(@Param("limit") int limit, @Param("type") String type);
 
     @Delete("delete from proxy_config_validated where id = #{id}")
     int delete(@Param("id") int id);

@@ -72,7 +72,7 @@ public class ProxyCrawlerService {
 
 
     public ProxyConfig getRandomValidatedProxy(String type) {
-        List<ProxyConfig> list = proxyConfigValidatedMapper.getValidatedProxyConfigsByLimit(30, type);
+        List<ProxyConfig> list = proxyConfigValidatedMapper.getValidatedProxyConfigsByLimitType(30, type);
         return getRandomValidatedProxy(list);
     }
 
