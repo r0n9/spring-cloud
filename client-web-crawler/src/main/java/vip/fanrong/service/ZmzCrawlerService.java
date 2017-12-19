@@ -397,8 +397,10 @@ public class ZmzCrawlerService {
                     }
                 }
 
-                int loaded = tvResourceMapper.batchInsert(tvResourcesList);
-                total += loaded;
+                if (!tvResourcesList.isEmpty()) {
+                    int loaded = tvResourceMapper.batchInsert(tvResourcesList);
+                    total += loaded;
+                }
             }
         }
         return total;
