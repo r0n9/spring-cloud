@@ -1,8 +1,6 @@
 package vip.fanrong.mapper;
 
-import org.apache.ibatis.annotations.InsertProvider;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 import vip.fanrong.model.KdsTopic;
 
@@ -17,5 +15,19 @@ public interface KdsTopicMapper {
 
     @InsertProvider(type = KdsTopicProvider.class, method = "batchInsert")
     int batchInsert(@Param("kdsTopicList") List<KdsTopic> kdsTopicList);
+
+
+    @Select("select * from kds_topics where post_time >=  NOW() - interval #{postInDays} day and insert_time >=  NOW() - interval 1 day;")
+    @Results({
+            @Result(column = "id", property = "id"),
+            @Result(column = "title", property = "title"),
+            @Result(column = "link", property = "link"),
+            @Result(column = "img_link", property = "imgLink"),
+            @Result(column = "reply", property = "replyTo"),
+            @Result(column = "user", property = "userTo"),
+            @Result(column = "post_time", property = "postTime"),
+            @Result(column = "insert_time", property = "insertTime")
+    })
+    List<KdsTopic> selectLatest(@Param("postInDays") int postInDays);
 
 }

@@ -11,7 +11,7 @@ public class KdsTopic {
     private String link;
     private String imgLink;
     private long replyTo;
-    private long userto;
+    private long userTo;
 
     private Date postTime;
 
@@ -57,12 +57,12 @@ public class KdsTopic {
         this.replyTo = replyTo;
     }
 
-    public long getUserto() {
-        return userto;
+    public long getUserTo() {
+        return userTo;
     }
 
-    public void setUserto(long userto) {
-        this.userto = userto;
+    public void setUserTo(long userTo) {
+        this.userTo = userTo;
     }
 
     public Date getPostTime() {
@@ -107,7 +107,7 @@ public class KdsTopic {
                 ", link='" + link + '\'' +
                 ", imgLink='" + imgLink + '\'' +
                 ", replyTo=" + replyTo +
-                ", userto=" + userto +
+                ", userto=" + userTo +
                 ", postTime=" + postTime +
                 ", insertTime=" + insertTime +
                 '}';

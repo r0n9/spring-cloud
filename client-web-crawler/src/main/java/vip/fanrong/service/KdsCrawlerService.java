@@ -57,13 +57,36 @@ public class KdsCrawlerService {
         return response;
     }
 
+    /**
+     * 入库
+     *
+     * @param proxy
+     * @param limit
+     * @return
+     */
     public int loadPopularTopics(ProxyConfig proxy, int limit) {
         List<KdsTopic> topics = this.getPopularTopics(proxy, limit);
+
         int loaded = kdsTopicMapper.batchInsert(topics);
         return loaded;
     }
 
-    public List<KdsTopic> getPopularTopics(ProxyConfig proxy, int limit) {
+    /**
+     * 出库
+     *
+     * @param limit
+     * @return
+     */
+    public List<KdsTopic> selectPopularTopics(int limit) {
+        List<KdsTopic> topics = kdsTopicMapper.selectLatest(14); // 最近两周的
+        topics.stream().distinct()
+                .sorted(comparing(KdsTopic::getReplyTo).reversed())
+                .limit(limit)
+                .collect(toList());
+        return topics;
+    }
+
+    private List<KdsTopic> getPopularTopics(ProxyConfig proxy, int limit) {
         Set<KdsTopic> set = new HashSet<>();
         for (int i = 0; i < 10; i++) {
             String url = this.getReplyPageUrl(i);
@@ -79,23 +102,28 @@ public class KdsCrawlerService {
         calendar.setTime(DateTimeUtil.getTimeNowGMT8());
         calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) - 14); // 2周内
 
+        Date now = DateTimeUtil.getTimeNowGMT8();
         List<KdsTopic> popularTopics = set.stream()
                 .filter((KdsTopic t) -> t.getPostTime().after(calendar.getTime()))
                 .sorted(comparing(KdsTopic::getReplyTo).reversed())
                 .limit(limit)
                 .collect(toList());
+        popularTopics.forEach(t -> t.setInsertTime(now));
         return popularTopics;
     }
 
     private List<KdsTopic> getTopics(ProxyConfig proxy, String url) {
-        String html = getMyHttpResponse(proxy, new HttpGet(url), null, null).getHtml();
+        MyHttpResponse response = getMyHttpResponse(proxy, new HttpGet(url), null, null);
+        if (response == null) {
+            return new ArrayList<>();
+        }
+        String html = response.getHtml();
         return parseHtml(html);
     }
 
     private List<KdsTopic> parseHtml(String pageHtml) {
 
         pageHtml = pageHtml.replaceAll("\\n", " ");
-        Date now = DateTimeUtil.getTimeNowGMT8();
 
         Matcher matcher = postPattern.matcher(pageHtml);
         List<KdsTopic> topics = new ArrayList<>();
@@ -132,8 +160,7 @@ public class KdsCrawlerService {
             topic.setImgLink(imgUrl);
             topic.setPostTime(DateTimeUtil.getDate(aside, "yyyy-MM-dd HH:mm"));
             topic.setReplyTo(Long.parseLong(replyto));
-            topic.setUserto(Long.parseLong(userto));
-            topic.setInsertTime(now);
+            topic.setUserTo(Long.parseLong(userto));
 
             topics.add(topic);
         }
