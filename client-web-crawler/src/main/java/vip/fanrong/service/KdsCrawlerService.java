@@ -79,11 +79,10 @@ public class KdsCrawlerService {
      */
     public List<KdsTopic> selectPopularTopics(int limit) {
         List<KdsTopic> topics = kdsTopicMapper.selectLatest(14); // 最近两周的
-        topics.stream().distinct()
+        return topics.stream().distinct()
                 .sorted(comparing(KdsTopic::getReplyTo).reversed())
                 .limit(limit)
                 .collect(toList());
-        return topics;
     }
 
     private List<KdsTopic> getPopularTopics(ProxyConfig proxy, int limit) {
