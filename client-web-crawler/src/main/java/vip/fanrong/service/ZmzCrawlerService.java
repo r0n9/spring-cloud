@@ -549,7 +549,7 @@ public class ZmzCrawlerService {
         HttpPost post = new HttpPost(regUrl);
 
         String result;
-        response = getMyHttpResponse(proxy, request, requestBody, null);
+        response = getMyHttpResponse(proxy, post, requestBody, null);
 
         if (null == response) {
             return null;
