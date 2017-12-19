@@ -23,7 +23,7 @@ public class KdsTopicProvider {
                 "#'{'kdsTopicList[{0}].link}, " +
                 "#'{'kdsTopicList[{0}].imgLink}, " +
                 "#'{'kdsTopicList[{0}].replyTo}, " +
-                "#'{'kdsTopicList[{0}].userto}, " +
+                "#'{'kdsTopicList[{0}].userTo}, " +
                 "#'{'kdsTopicList[{0}].postTime}, " +
                 "#'{'kdsTopicList[{0}].insertTime}" +
                 ")");
