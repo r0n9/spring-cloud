@@ -32,7 +32,6 @@ public class ImageOCRService {
     private String testResourcesLanguagePath;
 
     public String recognize(String imageUrl) {
-        System.out.println(new File(".").getAbsolutePath());
         String uuid = UUID.randomUUID().toString();
         String fileName = System.currentTimeMillis() + "_" + uuid.substring(30);
         String cleanFileName = fileName + "_1.jpg";
