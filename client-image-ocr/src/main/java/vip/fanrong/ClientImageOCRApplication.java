@@ -18,7 +18,7 @@ public class ClientImageOCRApplication {
 
     public static void main(String[] args) {
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
-        File folder = new File("./../images/clean/");
+        File folder = new File("./../images/");
         folder.mkdirs();
         SpringApplication.run(ClientImageOCRApplication.class, args);
     }

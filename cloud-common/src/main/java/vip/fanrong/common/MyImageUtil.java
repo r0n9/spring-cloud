@@ -15,13 +15,13 @@ import java.io.InputStream;
  */
 public class MyImageUtil {
     /**
-     * @param sfile   需要去噪的图像
-     * @param destDir 去噪后的图像保存地址
+     * @param sfile 需要去噪的图像
+     * @param tFile 去噪后的图像
      * @throws IOException
      */
-    public static void cleanImage(File sfile, String destDir)
+    public static void cleanImage(File sfile, File tFile)
             throws IOException {
-        File destF = new File(destDir);
+        File destF = tFile.getParentFile();
         if (!destF.exists()) {
             destF.mkdirs();
         }
@@ -81,8 +81,7 @@ public class MyImageUtil {
             System.out.println();
         }
 
-        ImageIO.write(binaryBufferedImage, "jpg",
-                new File(destDir, sfile.getName()));
+        ImageIO.write(binaryBufferedImage, "jpg", tFile);
     }
 
     public static boolean isBlack(int colorInt) {
@@ -192,11 +191,4 @@ public class MyImageUtil {
         return encoder.encode(data);
     }
 
-    public static void main(String[] args) throws IOException {
-
-        File folder = new File("./../images/clean/");
-        folder.mkdirs();
-        cleanImage(new File("C:\\Users\\Rong\\IdeaProjects\\Tess4JDemo\\target\\test-classes\\ruankao.png"), "C:\\Users\\Rong\\IdeaProjects\\Tess4JDemo\\target\\test-classes\\1");
-
-    }
 }
