@@ -16,13 +16,11 @@ import org.slf4j.LoggerFactory;
 import vip.fanrong.common.MyHttpClient;
 import vip.fanrong.common.MyHttpResponse;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -102,7 +100,7 @@ public class Test {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main3(String[] args) {
 
         MyHttpResponse response = MyHttpClient.getHttpResponse(new HttpGet("http://xiazai003.com/ZywCQ3"), null, null);
 
@@ -207,5 +205,9 @@ public class Test {
         MyHttpResponse response = MyHttpClient.getHttpResponse(request, null, null, "61.163.139.161", 80, "HTTP");
 
         System.out.println(response.getHtml());
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Date().getTime());
     }
 }

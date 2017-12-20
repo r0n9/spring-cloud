@@ -203,4 +203,66 @@ public class MyHttpClient {
         }
     }
 
+
+    public static boolean downloadImage(String imageUrl, String dirPath, String fileName) {
+        boolean isSuccess;
+        CloseableHttpResponse response;
+        InputStream in;
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            response = httpClient.execute(new HttpGet(imageUrl));
+            in = response.getEntity().getContent();
+            savePicToDisk(in, dirPath, fileName);
+            isSuccess = true;
+        } catch (IOException e) {
+            LOG.error(e.getMessage());
+            isSuccess = false;
+        }
+
+        return isSuccess;
+    }
+
+
+    /**
+     * 将图片写到 硬盘指定目录下
+     *
+     * @param in
+     * @param dirPath
+     * @param fileName
+     */
+    public static void savePicToDisk(InputStream in, String dirPath, String fileName) {
+
+        try {
+            File dir = new File(dirPath);
+            if (dir == null || !dir.exists()) {
+                dir.mkdirs();
+            }
+
+            //文件真实路径
+            String realPath = dirPath.concat(fileName);
+            File file = new File(realPath);
+            if (file == null || !file.exists()) {
+                file.createNewFile();
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                byte[] buf = new byte[1024];
+                int len = 0;
+                while ((len = in.read(buf)) != -1) {
+                    fos.write(buf, 0, len);
+                }
+                fos.flush();
+                fos.close();
+            }
+
+        } catch (IOException e) {
+            LOG.error(e.getMessage());
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                LOG.error(e.getMessage());
+            }
+        }
+    }
+
 }

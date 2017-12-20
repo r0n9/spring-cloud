@@ -27,6 +27,7 @@
         <module>client-web-crawler</module>
         <module>cloud-api-gateway</module>
         <module>cloud-eureka-consumer</module>
+        <module>client-image-ocr</module>
     </modules>
 
     <dependencyManagement>
