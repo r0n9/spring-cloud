@@ -3,8 +3,10 @@ package vip.fanrong.service;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import vip.fanrong.common.MyHttpClient;
 import vip.fanrong.common.MyImageUtil;
@@ -23,18 +25,21 @@ import java.util.UUID;
 public class ImageOCRService {
     private static final Log LOGGER = LogFactory.getLog(ImageOCRService.class);
 
-    private final static String IMAGE_FOLDER = "./../images/";
+    @Value("${image.path}")
+    private String imageFoler;
 
-    private final String testResourcesLanguagePath = "src/main/resources/tessdata";
+    @Value("${tessdata.path}")
+    private String testResourcesLanguagePath;
 
     public String recognize(String imageUrl) {
+        System.out.println(new File(".").getAbsolutePath());
         String uuid = UUID.randomUUID().toString();
         String fileName = System.currentTimeMillis() + "_" + uuid.substring(30);
         String cleanFileName = fileName + "_1.jpg";
         String resultFileName = fileName + ".txt";
 
         fileName = fileName + ".jpg";
-        boolean isSuccess = MyHttpClient.downloadImage(imageUrl, IMAGE_FOLDER, fileName);
+        boolean isSuccess = MyHttpClient.downloadImage(imageUrl, imageFoler, fileName);
 
         if (!isSuccess) {
             LOGGER.error("Image download failed: " + imageUrl);
@@ -42,7 +47,7 @@ public class ImageOCRService {
         }
 
         try {
-            MyImageUtil.cleanImage(new File(IMAGE_FOLDER, fileName), new File(IMAGE_FOLDER, cleanFileName));
+            MyImageUtil.cleanImage(new File(imageFoler, fileName), new File(imageFoler, cleanFileName));
         } catch (IOException e) {
             LOGGER.error("Image clean failed: " + imageUrl);
             LOGGER.error(e.getMessage());
@@ -50,7 +55,7 @@ public class ImageOCRService {
         }
 
         ITesseract instance = new Tesseract();
-        File imageFile = new File(IMAGE_FOLDER, cleanFileName);
+        File imageFile = new File(imageFoler, cleanFileName);
         BufferedImage bi = null;
         try {
             bi = ImageIO.read(imageFile);
@@ -71,9 +76,9 @@ public class ImageOCRService {
             return null;
         }
 
-
+        result = StringUtils.removePattern(result, "\\s*|\t|\r|\n");
         try {
-            FileWriter writer = new FileWriter(IMAGE_FOLDER + resultFileName);
+            FileWriter writer = new FileWriter(imageFoler + resultFileName);
             writer.write(result);
             writer.close();
         } catch (IOException e) {

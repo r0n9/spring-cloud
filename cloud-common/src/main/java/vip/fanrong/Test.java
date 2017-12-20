@@ -135,14 +135,14 @@ public class Test {
 
             Element element = doc.getElementById(season.aria);
             for (Toggle toggle : toggles) {
-                if(toggle.aria.endsWith("APP")){
+                if (toggle.aria.endsWith("APP")) {
                     continue;
                 }
                 System.out.println("dealing with " + season.getName() + " - " + toggle.name);
                 Element elementOfToggle = element.selectFirst("div#" + toggle.aria);
 
                 Elements eps = elementOfToggle.select("li:has(span.episode)");
-                for(Element ep : eps){
+                for (Element ep : eps) {
                     System.out.println(ep.selectFirst("span.episode").text());
                     System.out.println(ep);
 
@@ -208,6 +208,9 @@ public class Test {
     }
 
     public static void main(String[] args) {
-        System.out.println(new Date().getTime());
+
+        String url = "http://119.254.106.121/bdrs_rk/query/createImageAction.do?method=getImg&t=Wed%20Dec%2020%202017%2020:58:03%20GMT+0800%20(%D6%D0%B9%FA%B1%EA%D7%BC%CA%B1%BC%E4)";
+
+        System.out.println(StringEscapeUtils.escapeJava(url));
     }
 }
