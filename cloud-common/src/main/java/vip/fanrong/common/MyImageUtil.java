@@ -1,10 +1,14 @@
 package vip.fanrong.common;
 
+import sun.misc.BASE64Encoder;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by Rong on 2017/12/20.
@@ -158,6 +162,34 @@ public class MyImageUtil {
         }
 
         return threshold;
+    }
+
+    /**
+     * 图片转为Base64编码格式
+     *
+     * @param imgFile
+     * @return
+     */
+    public static String getBase64(String imgFile) {
+        InputStream inputStream = null;
+        byte[] data = null;
+        try {
+            inputStream = new FileInputStream(imgFile);
+            data = new byte[inputStream.available()];
+            inputStream.read(data);
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // 加密
+        BASE64Encoder encoder = new BASE64Encoder();
+        return encoder.encode(data);
     }
 
     public static void main(String[] args) throws IOException {
