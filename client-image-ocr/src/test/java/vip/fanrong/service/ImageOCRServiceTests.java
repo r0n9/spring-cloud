@@ -1,18 +1,24 @@
 package vip.fanrong.service;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Created by Rong on 2017/12/20.
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class ImageOCRServiceTests {
+
+    @Autowired
+    private ImageOCRService imageOCRService;
 
     @Test
     public void testRecognize() {
-        ImageOCRService imageOCRService = new ImageOCRService();
-
-        String result = imageOCRService.recognize("http://119.254.106.121/bdrs_rk/query/createImageAction.do?method=getImg&t=Wed%20Dec%2020%202017%2020:58:03%20GMT+0800%20(%D6%D0%B9%FA%B1%EA%D7%BC%CA%B1%BC%E4)");
+        String result = imageOCRService.recognize("http://119.254.106.121/bdrs_rk/query/createImageAction.do?method=getImg");
         System.out.println(result);
-
     }
 }

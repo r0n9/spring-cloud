@@ -27,7 +27,7 @@ public interface ZmzResourceTopMapper {
     int batchInsert(@Param("zmzResourceTopList") List<ZmzResourceTop> zmzResourceTopList);
 
 
-    @Select("select * from zmz_resource_top where get_time in (select get_time from (select get_time from zmz_resource_top ORDER BY id desc limit 1) A)")
+    @Select("select * from zmz_resource_top_current")
     @Results({
             @Result(column = "get_time", property = "getTime"),
             @Result(column = "count", property = "count"),

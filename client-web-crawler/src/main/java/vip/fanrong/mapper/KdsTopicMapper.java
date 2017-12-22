@@ -17,7 +17,7 @@ public interface KdsTopicMapper {
     int batchInsert(@Param("kdsTopicList") List<KdsTopic> kdsTopicList);
 
 
-    @Select("select * from kds_topics where post_time >=  NOW() - interval #{postInDays} day and insert_time >=  NOW() - interval 1 day;")
+    @Select("select * from kds_topics_14;")
     @Results({
             @Result(column = "id", property = "id"),
             @Result(column = "title", property = "title"),
@@ -28,6 +28,6 @@ public interface KdsTopicMapper {
             @Result(column = "post_time", property = "postTime"),
             @Result(column = "insert_time", property = "insertTime")
     })
-    List<KdsTopic> selectLatest(@Param("postInDays") int postInDays);
+    List<KdsTopic> selectLatest();
 
 }

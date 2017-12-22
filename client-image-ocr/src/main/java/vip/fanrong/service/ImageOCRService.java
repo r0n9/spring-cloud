@@ -76,14 +76,20 @@ public class ImageOCRService {
         }
 
         result = StringUtils.removePattern(result, "\\s*|\t|\r|\n");
+        FileWriter writer = null;
         try {
-            FileWriter writer = new FileWriter(imageFoler + resultFileName);
+            writer = new FileWriter(imageFoler + resultFileName);
             writer.write(result);
             writer.close();
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
+        } finally {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-
 
         return result;
     }
