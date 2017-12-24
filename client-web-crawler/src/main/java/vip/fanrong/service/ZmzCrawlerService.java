@@ -312,10 +312,16 @@ public class ZmzCrawlerService {
         // 解析
         Document doc = Jsoup.parse(response.getHtml());
         Element metaElement = doc.selectFirst("ul.tab-header.tab-side");
+        if (metaElement == null) {
+            return 0;
+        }
 
         Map<Season, List<Toggle>> seasonToToggles = new HashMap<>();
-
-        for (Element li : metaElement.select("li:has(ul)")) {
+        Elements lis = metaElement.select("li:has(ul)");
+        if (lis == null) {
+            return 0;
+        }
+        for (Element li : lis) {
             List<Toggle> toggles = new ArrayList<>();
             seasonToToggles.put(new Season(li.selectFirst("a").text(), li.selectFirst("a").attr("aria-controls")), toggles);
             int i = 0;
