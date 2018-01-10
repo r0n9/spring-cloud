@@ -67,6 +67,10 @@ public class KdsCrawlerService {
     public int loadPopularTopics(ProxyConfig proxy, int limit) {
         List<KdsTopic> topics = this.getPopularTopics(proxy, limit);
 
+        if (topics == null || topics.isEmpty()) {
+            return 0;
+        }
+
         int loaded = kdsTopicMapper.batchInsert(topics);
         return loaded;
     }
