@@ -33,7 +33,7 @@ public class KdsVCodeProcessor2 {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main1(String[] args) throws IOException {
 
         File file = new File("client-image-ocr/image/cut/0_0.png");
 

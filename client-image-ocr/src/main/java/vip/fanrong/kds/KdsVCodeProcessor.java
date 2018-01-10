@@ -222,7 +222,7 @@ public class KdsVCodeProcessor {
 
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main6(String[] args) throws IOException {
         File image1 = new File("client-image-ocr/src/main/resources/vcode-kds/0.png");
         BufferedImage bufferedImage1 = ImageIO.read(image1);
 
