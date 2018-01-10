@@ -31,7 +31,7 @@ public class ZmzCrawlerController {
     @ApiOperation(value = "Load Resource Tops", notes = "Load Resource Tops")
     @RequestMapping(value = "/resource/loadtops", method = RequestMethod.POST)
     public ObjectNode loadZmzResourceTops() {
-        ProxyConfig proxyConfig = proxyCrawlerService.getRandomValidatedProxy();
+        ProxyConfig proxyConfig = null;
         int tops = zmzCrawlerService.loadZmzResourceTops(proxyConfig); // 获取热门资源列表、入库
         try {
             Thread.sleep(2000);
@@ -61,7 +61,6 @@ public class ZmzCrawlerController {
     @ApiOperation(value = "Login all of the accounts")
     @RequestMapping(value = "/alllogin", method = RequestMethod.POST)
     public ObjectNode loginAll() {
-        ProxyConfig proxyConfig = proxyCrawlerService.getRandomValidatedProxy();
         String result = zmzCrawlerService.zmzAccountLoginAll();
         ObjectNode node = JsonUtil.createObjectNode();
         node.put("result", result);

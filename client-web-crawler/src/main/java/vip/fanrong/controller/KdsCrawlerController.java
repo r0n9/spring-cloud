@@ -27,13 +27,10 @@ public class KdsCrawlerController {
     @Autowired
     private KdsCrawlerService kdsCrawlerService;
 
-    @Autowired
-    private ProxyCrawlerService proxyCrawlerService;
-
     @ApiOperation(value = "Load Popular Tops", notes = "近期热门帖子入库")
     @RequestMapping(value = "/topics/load", method = RequestMethod.POST)
     public ObjectNode loadKdsPopular(@RequestParam(required = false, defaultValue = "20") int limit) {
-        ProxyConfig proxyConfig = proxyCrawlerService.getRandomValidatedProxy();
+        ProxyConfig proxyConfig = null;
         int loaded = kdsCrawlerService.loadPopularTopics(proxyConfig, limit);
         ObjectNode node = JsonUtil.createObjectNode();
         node.put("loaded", loaded);
