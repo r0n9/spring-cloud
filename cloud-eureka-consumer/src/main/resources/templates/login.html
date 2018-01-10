@@ -78,7 +78,7 @@
 		data: JSON.stringify(data),
 		success:function(msg){
 			if(msg.status == "success"){
-				document.location.href = "http://localhost:6600/"+msg.info;
+				document.location.href = "/"+msg.info;
 			}else if(msg.status == "failed"){
 				document.getElementById("alert").innerHTML = '<div class="alert alert-warning"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Warning!</strong>邮箱或密码不正确，请重试！</div>';
 			}else{
