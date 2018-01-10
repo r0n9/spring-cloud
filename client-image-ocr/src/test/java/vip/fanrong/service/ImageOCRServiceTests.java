@@ -21,4 +21,10 @@ public class ImageOCRServiceTests {
         String result = imageOCRService.recognize("http://119.254.106.121/bdrs_rk/query/createImageAction.do?method=getImg");
         System.out.println(result);
     }
+
+    @Test
+    public void testRecognizeKds() {
+        String result = imageOCRService.recognizeKds("https://passport.pchome.net/index.php?c=vcode");
+        System.out.println(result);
+    }
 }

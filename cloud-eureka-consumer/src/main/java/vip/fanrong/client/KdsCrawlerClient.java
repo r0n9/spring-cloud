@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 /**
  * Created by Rong on 2017/11/22.
  */
-@FeignClient("client-kds-crawler")
+@FeignClient("client-web-crawler")
 public interface KdsCrawlerClient {
 
-    @GetMapping("/v1/kds/getHotTopics")
+    @GetMapping("/kds/topics/get")
     ObjectNode getHotTopics(@RequestParam(value = "limit", required = false, defaultValue = "20") int limit);
 }

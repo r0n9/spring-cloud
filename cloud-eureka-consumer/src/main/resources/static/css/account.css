@@ -1,0 +1,26 @@
+body{
+  background: -webkit-linear-gradient(-130deg, #333, #000);
+}
+.form-signin {
+  max-width: 380px;
+  padding: 40px 25px;
+  margin: 140px auto 50px;
+  background: rgba(255,255,255,0.6);
+  box-shadow: 2px 2px 5px #777;
+  border-radius: 5px;
+}
+.form-signin input{
+  margin-bottom: 10px;
+} 
+.form-signin .checkbox{
+  margin-bottom: 10px;
+}
+.form-signin h2{
+  text-align: center;
+  margin: 0 0 30px;
+  font-size: 24px;
+}
+
+.form-signin p {
+  color: red;
+}

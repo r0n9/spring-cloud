@@ -160,7 +160,7 @@ public class KdsVCodeProcessor {
         return match / total;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main5(String[] args) throws IOException {
 
         for (int i = 0; i < 10; i++) {
             File folder = new File("client-image-ocr/image/base/" + i);
@@ -193,16 +193,16 @@ public class KdsVCodeProcessor {
 
     public static int recongnize(File image) throws IOException {
         Map<String, Integer> baseToValue = new HashMap<>();
-        baseToValue.put("client-image-ocr/image/base/0.png", 0);
-        baseToValue.put("client-image-ocr/image/base/1.png", 1);
-        baseToValue.put("client-image-ocr/image/base/2.png", 2);
-        baseToValue.put("client-image-ocr/image/base/3.png", 3);
-        baseToValue.put("client-image-ocr/image/base/4.png", 4);
-        baseToValue.put("client-image-ocr/image/base/5.png", 5);
-        baseToValue.put("client-image-ocr/image/base/6.png", 6);
-        baseToValue.put("client-image-ocr/image/base/7.png", 7);
-        baseToValue.put("client-image-ocr/image/base/8.png", 8);
-        baseToValue.put("client-image-ocr/image/base/9.png", 9);
+        baseToValue.put("client-image-ocr/src/main/resources/vcode-kds/0.png", 0);
+        baseToValue.put("client-image-ocr/src/main/resources/vcode-kds/1.png", 1);
+        baseToValue.put("client-image-ocr/src/main/resources/vcode-kds/2.png", 2);
+        baseToValue.put("client-image-ocr/src/main/resources/vcode-kds/3.png", 3);
+        baseToValue.put("client-image-ocr/src/main/resources/vcode-kds/4.png", 4);
+        baseToValue.put("client-image-ocr/src/main/resources/vcode-kds/5.png", 5);
+        baseToValue.put("client-image-ocr/src/main/resources/vcode-kds/6.png", 6);
+        baseToValue.put("client-image-ocr/src/main/resources/vcode-kds/7.png", 7);
+        baseToValue.put("client-image-ocr/src/main/resources/vcode-kds/8.png", 8);
+        baseToValue.put("client-image-ocr/src/main/resources/vcode-kds/9.png", 9);
 
         double maxScore = 0.0;
         int result = -1;
@@ -220,5 +220,18 @@ public class KdsVCodeProcessor {
         return result;
 
 
+    }
+
+    public static void main(String[] args) throws IOException {
+        File image1 = new File("client-image-ocr/src/main/resources/vcode-kds/0.png");
+        BufferedImage bufferedImage1 = ImageIO.read(image1);
+
+        System.out.println(bufferedImage1.getHeight());
+        System.out.println(bufferedImage1.getWidth());
+
+        int[][] arr = new int[80][88];
+
+        System.out.println(arr.length);
+        System.out.println(arr[0].length);
     }
 }
