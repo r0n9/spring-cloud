@@ -18,7 +18,7 @@ public class PageCacheConfiguration {
         PageCachingFilter customPageCachingFilter = new PageCachingFilter("vip.fanrong.mapper.index");
         FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
         filterRegistrationBean.setFilter(customPageCachingFilter);
-        filterRegistrationBean.setUrlPatterns(Lists.newArrayList("/", "/blogs"));
+        filterRegistrationBean.setUrlPatterns(Lists.newArrayList("/", "/blogs", "/kds"));
         return filterRegistrationBean;
     }
 

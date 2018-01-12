@@ -50,4 +50,12 @@ public class Tag implements Serializable {
     public int hashCode() {
         return name.length();
     }
+
+    @Override
+    public String toString() {
+        return "Tag{" +
+                "name='" + name + '\'' +
+                ", blogsNum=" + blogsNum +
+                '}';
+    }
 }

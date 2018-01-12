@@ -62,7 +62,9 @@ public class BlogController {
         if (tag.isPresent()) {
             model.addAttribute("blogs", new PageInfo<>(blogService.getBlogsByTag(tag.get())));
         } else {
-            model.addAttribute("blogs", new PageInfo<>(blogService.showBlogs()));
+            PageInfo pageInfo = new PageInfo<>(blogService.showBlogs());
+            System.out.println(pageInfo);
+            model.addAttribute("blogs", pageInfo);
         }
         return "list";
     }

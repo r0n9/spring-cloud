@@ -21,9 +21,10 @@ public class ClearPageCachingFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
+
     }
 
-    //暂时先简单地把缓存全部删光
+    // TODO 暂时先简单地把缓存全部删光
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException {

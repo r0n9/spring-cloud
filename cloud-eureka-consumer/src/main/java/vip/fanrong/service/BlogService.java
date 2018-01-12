@@ -57,16 +57,16 @@ public class BlogService {
         return blogs;
     }
 
-    // 获取前十五名热门博客（3篇为一页）
+    // 获取前20名热门博客（4篇为一页）
     public List<Blog> getHotBlogs(int page) {
-        Set<String> hotBlogs = zSetOperations.range("hotBlogsRank", (page - 1) * 3, page * 3 - 1);
+        Set<String> hotBlogs = zSetOperations.range("hotBlogsRank", (page - 1) * 4, page * 4 - 1);
 
         List<Blog> blogs = new ArrayList<>();
 
         if (hotBlogs == null || hotBlogs.isEmpty()) {
             // 如果缓存里没有
             List<Blog> allBlogs = blogMapper.getBlogs(null, null);
-            for (int i = (page - 1) * 3; i < page * 3 - 1; i++) {
+            for (int i = (page - 1) * 4; i < page * 4 - 1; i++) {
                 if (allBlogs.size() > i) {
                     blogs.add(allBlogs.get(i));
                 }
