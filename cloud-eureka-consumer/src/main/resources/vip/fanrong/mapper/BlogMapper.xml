@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="vip.fanrong.mapper.BlogMapper">
+
+    <!-- 二级缓存 -->
+    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+
+    <resultMap id="BlogDetail" type="Blog" autoMapping="true">
+        <id property="id" column="id"/>
+        <association property="author" javaType="User" autoMapping="true">
+            <id property="id" column="user_id"/>
+        </association>
+        <collection property="tags" ofType="Tag">
+            <id property="name" column="tags"/>
+        </collection>
+    </resultMap>
+
+    <sql id="blogCols">
+		blog.id, blog.author, blog.title, blog.content, blog.createdTime, 
+		blog_tag_relation.tag as tags
+	</sql>
+    <sql id="userCols">
+		user.id as user_id, user.username
+	</sql>
+
+    <select id="getBlogById" resultMap="BlogDetail">
+        select<include refid="blogCols"/>,
+        <include refid="userCols"/>, user.email, user.description, user.avatar
+        from blog left join user
+        on blog.author = user.id
+        left join blog_tag_relation
+        on blog.id = blog_tag_relation.blogId
+        where blog.id = #{id}
+    </select>
+
+    <select id="getBlogs" resultMap="BlogDetail">
+        select<include refid="blogCols"/>,
+        <include refid="userCols"/>
+        from blog left join user
+        on blog.author = user.id
+        left join blog_tag_relation
+        on blog.id = blog_tag_relation.blogId
+        <where>
+            <if test="userId!=null and userId!=''">
+                and user.id = #{userId}
+            </if>
+            <if test="tag!=null and tag!=''">
+                and blog.id in
+                (select blogId from blog_tag_relation
+                where tag = #{tag})
+            </if>
+        </where>
+        order by blog.createdTime desc
+    </select>
+
+    <insert id="createBlog" parameterType="Blog" useGeneratedKeys="true" keyProperty="blog.id">
+		insert into blog 
+		(author, title, content, createdTime) 
+		values 
+		(#{blog.author.id}, #{blog.title}, #{blog.content}, #{blog.createdTime, jdbcType=TIMESTAMP})
+	</insert>
+
+    <update id="updateBlog" parameterType="Blog">
+		update blog set 
+		title = #{title}, content = #{content} 
+		where id = #{id}
+	</update>
+
+    <delete id="deleteBlog">
+		delete from blog where id = #{id}
+	</delete>
+
+</mapper>

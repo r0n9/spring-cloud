@@ -8,7 +8,11 @@ import org.springframework.web.bind.annotation.*;
 import vip.fanrong.Constant;
 import vip.fanrong.client.KdsCrawlerClient;
 import vip.fanrong.model.Blog;
+import vip.fanrong.model.Tag;
 import vip.fanrong.model.User;
+import vip.fanrong.service.BlogService;
+import vip.fanrong.service.TagService;
+import vip.fanrong.service.UserService;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
@@ -24,39 +28,37 @@ public class IndexController {
     @Autowired
     private KdsCrawlerClient kdsCrawlerClient;
 
+    @Autowired
+    private BlogService blogService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private TagService tagService;
+
     //网站首页
     @GetMapping("/")
     public String showMainPage(@CookieValue(Constant.COOKIE_KEY_NAME) Optional<String> cookieEmail,
                                HttpSession session,
                                Model model,
                                @RequestParam("page") Optional<Integer> page) {
-        //自动登录
+        // 自动登录
         if (session.getAttribute("CURRENT_USER") == null
                 && cookieEmail != null && cookieEmail.isPresent()) {
-            session.setAttribute("CURRENT_USER", new User(cookieEmail.get(), "", ""));
+            session.setAttribute("CURRENT_USER", userService.getUserByEmail(cookieEmail.get()));
         }
 
-        //获取热门博客
-        model.addAttribute("", "");
-        model.addAttribute("page", 1);
-        List<Blog> blogs = new ArrayList<>();
-        Blog blog = new Blog();
-        blog.setAuthor(new User());
-        blog.setTitle("TEST title");
-        blog.setId(1l);
-        blog.setContent("contentttt");
-
-        blogs.add(blog);
-        blogs.add(blog);
-        blogs.add(blog);
-        blogs.add(blog);
-        blogs.add(blog);
+        // 获取热门博客
+        List<Blog> blogs = blogService.getHotBlogs(page.orElse(1));
         model.addAttribute("blogs", blogs);
-
-
+        if (page.isPresent()) {
+            model.addAttribute("page", page.get());
+        } else {
+            model.addAttribute("page", 1);
+        }
         return "index";
     }
-
 
     @ResponseBody
     @GetMapping("/kds")
@@ -68,22 +70,14 @@ public class IndexController {
     //用户的个人主页
     @GetMapping("/admin/{id}")
     public String showUserPage(@PathVariable("id") long id, Model model) {
-
-
-        List<Blog> blogs = new ArrayList<>();
-        Blog blog = new Blog();
-        blog.setAuthor(new User());
-        blog.setTitle("TEST title");
-        blog.setId(1l);
-        blog.setContent("contentttt");
-
-        blogs.add(blog);
-        blogs.add(blog);
-        blogs.add(blog);
-        blogs.add(blog);
-        blogs.add(blog);
-        model.addAttribute("blogs", blogs);
-
+        model.addAttribute("blogs", blogService.showUserBlogs(id));
         return "admin";
     }
+
+    @ResponseBody
+    @GetMapping("/tags")
+    public List<Tag> getTags() {
+        return tagService.getTags();
+    }
+
 }

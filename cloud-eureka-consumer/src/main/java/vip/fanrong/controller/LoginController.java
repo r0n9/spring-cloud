@@ -48,9 +48,9 @@ public class LoginController {
             loginStatus.setMessage("登陆失败！");
             return loginStatus;
         } else {
-            //登陆成功
+            // 登陆成功
             session.setAttribute("CURRENT_USER", user);
-            //添加cookie，7天内免登陆
+            // 添加cookie，7天内免登陆
             if (rememberMe != null) {
                 Cookie cookie = new Cookie(Constant.COOKIE_KEY_NAME, user.getEmail());
                 cookie.setMaxAge(60 * 60 * 24 * 7);

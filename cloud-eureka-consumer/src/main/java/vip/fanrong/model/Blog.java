@@ -86,5 +86,15 @@ public class Blog implements Serializable {
         this.author = author;
     }
 
-
+    @Override
+    public String toString() {
+        return "Blog{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", author=" + author +
+                ", content='" + content + '\'' +
+                ", createdTime=" + createdTime +
+                ", tags=" + tags +
+                '}';
+    }
 }

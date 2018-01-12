@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="vip.fanrong.mapper.TagMapper">
+
+    <!-- 二级缓存 -->
+    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+    <cache-ref namespace="vip.fanrong.mapper.BlogMapper"/>
+
+    <select id="findOne" resultType="Tag">
+  	select * from tag where name = #{name}
+  </select>
+
+    <select id="findByBlog" resultType="Tag">
+  	select blog_tag_relation.tag as name 
+  	from blog_tag_relation 
+  	where blogId = #{blogId}
+  </select>
+
+    <delete id="deleteByBlog">
+  	delete from blog_tag_relation where blogId = #{blogId}
+  </delete>
+
+    <insert id="create" parameterType="Tag">
+  	insert into tag
+  	(name)
+  	values
+  	(#{name})
+  </insert>
+
+    <insert id="addOneTagToBlog">
+  	insert into blog_tag_relation
+  	(blogId, tag)
+  	values
+  	(#{blogId}, #{tag})
+  </insert>
+
+</mapper>

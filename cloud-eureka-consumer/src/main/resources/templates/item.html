@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head lang="en">
+  <meta charset="UTF-8">
+  <title th:text="${blog.title}">Title</title>
+  <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/footer.css">
+  <link rel="stylesheet" href="/css/sidbar.css">
+  <link rel="stylesheet" href="/css/blog.css">
+  <link rel="stylesheet" href="/css/highlight.css">
+  <script src="//cdn.bootcss.com/jquery/1.11.2/jquery.min.js"></script>
+  <script src="//cdn.bootcss.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand">or233</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+      	<li><a href="/">首页</a></li>
+        <li><a href="/blogs">所有分享</a>
+        <li><a th:unless="${session.CURRENT_USER == null}" th:href="@{'/admin/'+${session.CURRENT_USER.id}}">个人中心</a></li>
+        <li><a href="/blogs/create">创建分享</a></li>
+        <li><a th:unless="${session.CURRENT_USER == null}" href="logout">退出登录</a></li>
+      	<li><a th:if="${session.CURRENT_USER == null}" href="/login">登陆</a></li>
+        <li><a th:if="${session.CURRENT_USER == null}" href="/register">注册</a></li>
+      </ul>
+      <form class="navbar-form navbar-right" method="post" action="/blogs/search">
+        <input name="key" type="text" class="form-control" placeholder="搜索...">
+      </form>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="row">
+
+    <div class="col-sm-8 blog-item">
+      <div class="page-header">
+        <h2 th:text="${blog.title}">title</h2>
+        <p class="blog-post-meta" th:text="${#dates.format(blog.createdTime, 'yyyy-MM-dd')}">2015年2月3日</p>
+      <a th:href="@{'/blogs?tag=' + ${tag.name}}" th:each="tag: ${blog.tags}">
+    			<span class="label label-default tag" th:text="${tag.name}">标签</span>
+    		</a>
+    		</div>
+      <div class="post-content" th:utext="${blog.content}">
+      </div>
+        
+      <nav>
+        <ul class="pager">
+          <li class="previous"><a href="#"><span aria-hidden="true">&larr;</span> 上一篇</a></li>
+          <li class="next"><a href="#">下一篇 <span aria-hidden="true">&rarr;</span></a></li>
+        </ul>
+      </nav>
+
+      <section class="comment-list">
+        <h4 class="page-header">文章评论</h4>
+        <div th:unless="${session.CURRENT_USER == null}" class="create-comment clearfix">
+          <textarea id="content" name="content" rows="3"
+                    class="form-control" placeholder="添加新评论"></textarea>
+          <a class="btn btn-success btn-sm btn-publish pull-right">
+            发布评论</a>
+        </div>
+        <h5 th:if="${session.CURRENT_USER == null}">您还没<a th:href="@{'/login?next=/blogs/'+${blog.id}}">登陆</a>，请登陆后再评论！</h5>
+        <ul class="list-unstyled comment-template" th:each="comment: ${comments}">
+        		<li class="clearfix">
+            	<img th:src="@{'/avatar/'+${comment.commentor.id}}" alt="" class="avatar pull-left">
+	            	<p class="content">
+	            <a class="author-name" th:text="${comment.commentor.username}">Harttle</a>
+	            <span class="comment-time text-muted date" th:text="${#dates.format(comment.createdTime, 'yyyy-MM-dd HH:mm:ss')}">2 mins ago</span>
+	            <span class="comment-content" th:text="${comment.content}">
+		            commit
+	            </span>
+	            </p>
+            </li>
+       </ul>
+      </section>
+    </div>
+    
+    <div class="col-sm-3 col-sm-offset-1">
+      <div class="sidebar-module sidebar-module-inset">
+        <div class="avatar">
+          <img class="img-circle img-rounded img-thumbnail avatar" th:src="'/avatar/'+${blog.author.id}">
+          <div>
+            <h4 th:text="${blog.author.username}">author name</h4>
+            <a th:text="${blog.author.email}">author email</a>
+          </div>
+        </div>
+        <p th:text="${blog.author.description}">author description</p>
+      </div>
+      <div class="sidebar-module">
+        <h4>归档</h4>
+        <ol class="list-unstyled">
+          <li><a href="#">2015年03月</a></li>
+          <li><a href="#">2015年02月</a></li>
+          <li><a href="#">2015年01月</a></li>
+          <li><a href="#">2014年12月</a></li>
+          <li><a href="#">2014年11月</a></li>
+          <li><a href="#">2014年10月</a></li>
+          <li><a href="#">2014年09月</a></li>
+          <li><a href="#">2014年08月</a></li>
+          <li><a href="#">2014年07月</a></li>
+        </ol>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer class="buttom">
+  &copy; 2016 SomeCompany, Org &middot; <a href="#">隐私</a> &middot; <a href="#">条款</a>
+</footer>
+
+<script type="text/javascript">
+(function() {
+	$(document).ready(function(){
+		$(".comment-list .btn-publish").click(function() {
+			if(!$("#content").val()) {
+				return;
+			}
+			var content = $("#content").val();
+			$("#content").val("");
+			var data = {content: content};
+			$.ajax({
+				url: location.pathname + "/comments",
+				method: "POST",
+				contentType: "application/json; charset=utf-8",
+				data: JSON.stringify(data),
+				success:function(data){
+					if(data.status == "success"){
+						var commentElement = $($(".comment-template").html());
+						$(commentElement.find(".author-name")).html(data.commentor.username);
+						$(commentElement.find(".comment-time")).html(data.createdTime);
+						$(commentElement.find(".comment-content")).html(data.content);
+						$(".comment-list").append(commentElement);
+					}else{
+						document.write(msg);
+					}
+				}
+			});
+		});
+	});
+})();
+</script>
+</body>
+</html>

@@ -12,4 +12,17 @@
         <!-- 全局启用或禁用延迟加载。当禁用时，所有关联对象都会即时加载 -->
         <setting name="lazyLoadingEnabled" value="true" />
     </settings>
+
+    <typeAliases>
+        <typeAlias alias="Blog" type="vip.fanrong.model.Blog"/>
+        <typeAlias alias="User" type="vip.fanrong.model.User"/>
+        <typeAlias alias="Tag" type="vip.fanrong.model.Tag"/>
+        <typeAlias alias="Comment" type="vip.fanrong.model.Comment"/>
+    </typeAliases>
+
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageHelper">
+            <property name="dialect" value="mysql"/>
+        </plugin>
+    </plugins>
 </configuration>

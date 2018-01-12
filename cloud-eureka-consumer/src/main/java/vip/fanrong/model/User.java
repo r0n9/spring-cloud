@@ -103,4 +103,18 @@ public class User implements Serializable {
     public void setInvited(Long invited) {
         this.invited = invited;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", description='" + description + '\'' +
+                ", avatar='" + avatar + '\'' +
+                ", insertTime=" + insertTime +
+                ", invited=" + invited +
+                '}';
+    }
 }
