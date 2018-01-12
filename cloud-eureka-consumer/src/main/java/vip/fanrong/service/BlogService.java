@@ -36,8 +36,8 @@ public class BlogService {
     }
 
     public void createBlog(Blog blog, String tags) {
-        TagUtils.setBlogTags(blog, tags);
         blogMapper.createBlog(blog);
+        TagUtils.setBlogTags(blog, tags);
     }
 
 
