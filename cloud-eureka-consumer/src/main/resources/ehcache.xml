@@ -11,11 +11,11 @@
             timeToIdleSeconds="120"
             timeToLiveSeconds="60"
             memoryStoreEvictionPolicy="LFU"
-            />
-            
+    />
+
     <cache name="vip.fanrong.model.User"></cache>
-	<cache name="vip.fanrong.model.Blog"></cache>
-    <cache name="vip.fanrong.mapper.index"></cache>
+    <cache name="vip.fanrong.model.Blog"></cache>
+    <cache name="vip.fanrong.mapper.index" timeToIdleSeconds="120" timeToLiveSeconds="60"></cache>
 
     <!--
         name：Cache的唯一标识

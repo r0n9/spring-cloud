@@ -64,7 +64,6 @@ public class IndexController {
         return kdsCrawlerClient.getHotTopics(10);
     }
 
-
     //用户的个人主页
     @GetMapping("/admin/{id}")
     public String showUserPage(@PathVariable("id") long id, Model model) {
