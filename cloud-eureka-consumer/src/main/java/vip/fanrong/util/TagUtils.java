@@ -1,10 +1,11 @@
-package vip.fanrong.service;
+package vip.fanrong.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import vip.fanrong.mapper.TagMapper;
 import vip.fanrong.model.Blog;
 import vip.fanrong.model.Tag;
+import vip.fanrong.service.CacheService;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -50,16 +51,16 @@ public class TagUtils {
         return tagList;
     }
 
-    //给博客设置标签，并把设置好的博客返回
+    // 给博客设置标签，并把设置好的博客返回
     public static Blog setBlogTags(Blog blog, String tags) {
         Set<Tag> oldTagsSet = blog.getTags();
         if (oldTagsSet == null || oldTagsSet.isEmpty()) {
             if (tags == null || tags.isEmpty()) {
-                //本来标签为空，现在也为空
+                // 本来标签为空，现在也为空
                 return blog;
             }
         } else {
-            //本来标签不为空，删除老的标签
+            // 本来标签不为空，删除老的标签
             tagMapper.deleteByBlog(blog.getId());
             for (Tag tag : oldTagsSet) {
                 cacheService.incrScore("tags", tag.getName(), 1);
@@ -67,16 +68,16 @@ public class TagUtils {
         }
 
         Set<Tag> newTagsSet = new HashSet<>();
-        String[] newTags = tags.split(",");    //获取新的标签列表
+        String[] newTags = tags.split(",");    // 获取新的标签列表
         for (String tag : newTags) {
             if (tag.trim().isEmpty()) {
                 continue;
             }
-            //去重
+            // 去重
             if (!newTagsSet.contains(new Tag(tag))) {
                 newTagsSet.add(new Tag(tag));
                 if (tagMapper.findOne(tag) == null) {
-                    //数据库里没有的标签
+                    // 数据库里没有的标签
                     tagMapper.create(tag);
                 }
                 tagMapper.addOneTagToBlog(tag, blog.getId());

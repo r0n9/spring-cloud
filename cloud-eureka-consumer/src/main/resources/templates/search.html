@@ -4,7 +4,7 @@
 
 <head lang="en">
     <meta charset="UTF-8">
-    <title>文章列表</title>
+    <title>搜索结果</title>
     <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/footer.css">
     <link rel="stylesheet" href="/css/sidbar.css">
@@ -30,7 +30,7 @@
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                 <li><a href="/">首页</a></li>
-                <li><a>所有分享</a>
+                <li><a href="/blogs">所有分享</a></li>
                 <li><a th:unless="${session.CURRENT_USER == null}" th:href="@{'/admin/'+${session.CURRENT_USER.id}}">个人中心</a>
                 </li>
                 <li><a href="/blogs/create">分享一下</a></li>
@@ -48,21 +48,18 @@
 <div class="container">
 
     <div class="page-header">
-        <h1>所有分享</h1>
+        <h1>搜索结果</h1>
     </div>
 
     <div class="row">
 
         <div class="col-sm-8">
-            <div class="blog-post" th:each="blog: ${blogs.list}">
+            <div class="blog-post" th:each="blog: ${blogs}">
                 <h3 class="blog-post-title">
                     <a th:href="@{'/blogs/'+${blog.id}}" th:text="${blog.title}">title</a>
                 </h3>
                 分享于<span class="text-muted date" th:text="${#dates.format(blog.createdTime, 'MM月dd日 HH:mm')}"> 2 mins ago</span>
-                &nbsp;&nbsp;by <a class="blue" th:text="${blog.author.username}">author</a>
-                <a th:href="@{'/blogs?tag=' + ${tag.name}}" th:each="tag: ${blog.tags}">
-                    <span class="label label-default tag" th:text="${tag.name}">标签</span>
-                </a>
+                &nbsp;&nbsp;&nbsp;&nbsp;
                 <div class="single-blog-detail">
                     <p class="blog-post-content" id="content" th:utext="${blog.content}">
                         content.
@@ -74,21 +71,6 @@
                     })
                 </script>
             </div>
-
-            <nav>
-                <ul class="pager">
-                    <li th:if=${blogs.hasPreviousPage} class="previous">
-                        <a th:href="@{'?page=' + ${blogs.prePage}}">
-        			<span aria-hidden="true">&larr;
-        			</span>上一页</a>
-                    </li>
-                    <li th:if=${blogs.hasNextPage} class="next">
-                        <a th:href="@{'?page=' + ${blogs.nextPage}}">
-        			<span aria-hidden="true">&rarr;
-        			</span>下一页</a>
-                    </li>
-                </ul>
-            </nav>
 
         </div>
 
@@ -104,7 +86,6 @@
                 </div>
                 <p th:text="${session.CURRENT_USER.description}">description</p>
             </div>
-
             <div class="sidebar-module">
                 <h4>归档</h4>
                 <ol class="list-unstyled">

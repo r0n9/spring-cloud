@@ -3,129 +3,139 @@
       xmlns:th="http://www.thymeleaf.org">
 
 <head lang="en">
-  <meta charset="UTF-8">
-  <title th:if="${edit == null}">创建分享</title>
-  <title th:unless="${edit == null}">修改分享</title>
-  <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/css/footer.css">
-  <link rel="stylesheet" href="/css/sidbar.css">
-  <link rel="stylesheet" href="/css/blog.css">
-  <link rel="stylesheet" href="/css/highlight.css">
-  <link rel="stylesheet" href="/lib/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">
-  <link rel="stylesheet" href="/lib/tagify/jquery.tagify.css"/>
-  <script src="//cdn.bootcss.com/jquery/1.11.2/jquery.min.js"></script>
-  <script src="//cdn.bootcss.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-  <script src="/lib/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script>
-  <script src="/lib/tagify/jquery.tagify.min.js"></script>
-  <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta charset="UTF-8">
+    <title th:if="${edit == null}">创建分享</title>
+    <title th:unless="${edit == null}">修改分享</title>
+    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/sidbar.css">
+    <link rel="stylesheet" href="/css/blog.css">
+    <link rel="stylesheet" href="/css/highlight.css">
+    <link rel="stylesheet" href="/lib/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">
+    <link rel="stylesheet" href="/lib/tagify/jquery.tagify.css"/>
+    <script src="//cdn.bootcss.com/jquery/1.11.2/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script src="/lib/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script>
+    <script src="/lib/tagify/jquery.tagify.min.js"></script>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
 </head>
 
 
 <body>
 <nav class="navbar navbar-inverse navbar-fixed-top">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand">or233</a>
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand">or233分享</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/">首页</a></li>
+                <li><a href="/blogs">所有分享</a>
+                <li><a th:href="@{'/admin/'+${session.CURRENT_USER.id}}">个人中心</a></li>
+                <li><a>分享一下</a></li>
+                <li><a th:unless="${session.CURRENT_USER == null}" href="/logout">退出登录</a></li>
+            </ul>
+            <form class="navbar-form navbar-right" method="post" action="/blogs/search">
+                <input name="key" type="text" class="form-control" placeholder="搜索...">
+            </form>
+        </div>
     </div>
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-      	<li><a href="/">首页</a></li>
-        <li><a href="/blogs">所有分享</a>
-        <li><a th:href="@{'/admin/'+${session.CURRENT_USER.id}}">个人中心</a></li>
-        <li><a>创建分享</a></li>
-        <li><a th:unless="${session.CURRENT_USER == null}" href="/logout">退出登录</a></li>
-      </ul>
-      <form class="navbar-form navbar-right" method="post" action="/blogs/search">
-        <input name="key" type="text" class="form-control" placeholder="搜索...">
-      </form>
-    </div>
-  </div>
 </nav>
 
 <div class="container">
-  <div class="page-header">
-    <h2 th:if="${edit == null}">创建分享
-      <small>在这里新建一个分享</small>
-    </h2>
-    
-    <h2 th:unless="${edit == null}">修改博文
-      <small>在这里修改你的分享</small>
-    </h2>
-  </div>
-    
+    <div class="page-header">
+        <h2 th:if="${edit == null}">创建分享
+            <small>在这里新建一个分享</small>
+        </h2>
+
+        <h2 th:unless="${edit == null}">修改博文
+            <small>在这里修改你的分享</small>
+        </h2>
+    </div>
+
     <div class="row">
 
-    <div class="col-sm-8">
+        <div class="col-sm-8">
 
-      <form class="form-create-blog" th:if="${edit} == null" action="/blogs" th:object="${blog}" method="post">
-        <div class="form-group">
-          <label for="title">标题</label>
-          <input type="text" class="form-control" name="title" th:field="*{title}" placeholder="文章的标题" autofocus="">
-			<p th:if="${#fields.hasErrors('title')}" th:errors="*{title}">标题长度必须在2-30之间</p>        
+            <form class="form-create-blog" th:if="${edit} == null" action="/blogs" th:object="${blog}" method="post">
+                <div class="form-group">
+                    <label for="title">标题</label>
+                    <input type="text" class="form-control" name="title" th:field="*{title}" placeholder="文章的标题"
+                           autofocus="">
+                    <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}">标题长度必须在2-30之间</p>
+                </div>
+                <div class="form-group">
+                    <label for="title">标签</label>
+                    <p>
+                        <input type="text" class="form-control" name="alltags" th:value="${alltags}" placeholder="标签"
+                               autofocus="">
+                </div>
+                <div class="form-group">
+                    <label for="content">内容</label>
+                    <textarea class="form-control" name="content" th:field="*{content}" placeholder="文章的内容"
+                              rows="18"></textarea>
+                    <script type="text/javascript">
+                        $('#content').wysihtml5();
+                    </script>
+                    <p th:if="${#fields.hasErrors('content')}" th:errors="*{content}">内容不可为空</p>
+                </div>
+                <button type="submit" class="btn pull-right btn-primary">保存</button>
+            </form>
+
+            <form class="form-create-blog" th:if="${edit} == 1" th:action="@{'/blogs/'+${blog.id}}" th:object="${blog}"
+                  method="post">
+                <div class="form-group">
+                    <label for="title">标题</label>
+                    <input type="text" class="form-control" name="title" th:field="*{title}" placeholder="文章的标题"
+                           autofocus="">
+                    <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}">标题长度必须在2-30之间</p>
+                </div>
+                <div class="form-group">
+                    <label for="title">标签</label>
+                    <p>
+                        <input type="text" class="form-control" name="alltags" th:value="${alltags}" placeholder="标签"
+                               autofocus="">
+                </div>
+                <div class="form-group">
+                    <label for="content">内容</label>
+                    <textarea class="form-control" name="content" th:field="*{content}" placeholder="文章的内容"
+                              rows="18"></textarea>
+                    <script type="text/javascript">
+                        $('#content').wysihtml5();
+                    </script>
+                    <p th:if="${#fields.hasErrors('content')}" th:errors="*{content}">内容不可为空</p>
+                </div>
+                <button type="submit" class="btn pull-right btn-primary">保存</button>
+            </form>
+
         </div>
-        <div class="form-group">
-          <label for="title">标签</label><p>
-          <input type="text" class="form-control" name="alltags" th:value="${alltags}" placeholder="标签" autofocus="">
+
+        <div class="col-sm-3 col-sm-offset-1">
+            <div class="sidebar-module sidebar-module-inset">
+                <div class="avatar">
+                    <img class="img-circle img-rounded img-thumbnail avatar"
+                         th:src="@{'/avatar/'+${session.CURRENT_USER.id}}">
+                    <div>
+                        <h4 th:text="${session.CURRENT_USER.username}">name</h4>
+                        <a th:text="${session.CURRENT_USER.email}">email@qq.com</a>
+                    </div>
+                </div>
+                <p th:text="${session.CURRENT_USER.description}">description</p>
+            </div>
         </div>
-        <div class="form-group">
-          <label for="content">内容</label>
-          <textarea class="form-control" name="content" th:field="*{content}" placeholder="文章的内容" rows="18"></textarea>
-          <script type="text/javascript">
-  				$('#content').wysihtml5();
-		</script>
-          <p th:if="${#fields.hasErrors('content')}" th:errors="*{content}">内容不可为空</p>
-        </div>
-        <button type="submit" class="btn pull-right btn-primary">保存</button>
-      </form>
-      
-      <form class="form-create-blog" th:if="${edit} == 1"th:action="@{'/blogs/'+${blog.id}}" th:object="${blog}" method="post">
-        <div class="form-group">
-          <label for="title">标题</label>
-          <input type="text" class="form-control" name="title" th:field="*{title}" placeholder="文章的标题" autofocus="">
-			<p th:if="${#fields.hasErrors('title')}" th:errors="*{title}">标题长度必须在2-30之间</p>        
-        </div>
-        <div class="form-group">
-          <label for="title">标签</label><p>
-          <input type="text" class="form-control" name="alltags" th:value="${alltags}" placeholder="标签" autofocus="">
-        </div>
-        <div class="form-group">
-          <label for="content">内容</label>
-          <textarea class="form-control" name="content" th:field="*{content}" placeholder="文章的内容" rows="18"></textarea>
-          <script type="text/javascript">
-  				$('#content').wysihtml5();
-		</script>
-          <p th:if="${#fields.hasErrors('content')}" th:errors="*{content}">内容不可为空</p>
-        </div>
-        <button type="submit" class="btn pull-right btn-primary">保存</button>
-      </form>
 
     </div>
-
-    <div class="col-sm-3 col-sm-offset-1">
-      <div class="sidebar-module sidebar-module-inset">
-        <div class="avatar">
-          <img class="img-circle img-rounded img-thumbnail avatar" th:src="@{'/avatar/'+${session.CURRENT_USER.id}}">
-          <div>
-            <h4 th:text="${session.CURRENT_USER.username}">name</h4>
-            <a th:text="${session.CURRENT_USER.email}">email@qq.com</a>
-          </div>
-        </div>
-        <p th:text="${session.CURRENT_USER.description}">description</p>
-      </div>
-    </div>
-
-  </div>
 
 </div>
 
 <footer>
-  &copy; 2016 SomeCompany, Org &middot; <a href="#">隐私</a> &middot; <a href="#">条款</a>
+    &copy; 2018 Or233, Org &middot; <a href="#">隐私</a> &middot; <a href="#">条款</a>
 </footer>
 
 </body>

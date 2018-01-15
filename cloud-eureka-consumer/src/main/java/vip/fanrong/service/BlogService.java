@@ -12,6 +12,8 @@ import vip.fanrong.exception.NotFoundException;
 import vip.fanrong.mapper.BlogMapper;
 import vip.fanrong.mapper.TagMapper;
 import vip.fanrong.model.Blog;
+import vip.fanrong.model.Tag;
+import vip.fanrong.util.TagUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +81,7 @@ public class BlogService {
             try {
                 blog = quickGetBlog(Long.parseLong(id));
             } catch (NumberFormatException | NotFoundException e) {
-                e.printStackTrace();
+                continue;
             }
             blog.setContent(Jsoup.parse(blog.getContent()).text());
             blogs.add(blog);
@@ -124,4 +126,43 @@ public class BlogService {
         cacheService.incrScore("hotBlogsRank", "" + id, -1);
         return quickGetBlog(id);
     }
+
+    public void deleteBlog(Long id) {
+        blogMapper.deleteBlog(id);
+
+        //清除缓存
+        cacheService.delFromRedis("blogId:" + id);
+        zSetOperations.remove("hotBlogsRank", "" + id);
+        Set<Tag> tags = tagMapper.findByBlog(id);
+        for (Tag tag : tags) {
+            cacheService.incrScore("tags", tag.getName(), 1);
+        }
+
+        tagMapper.deleteByBlog(id);
+    }
+
+    public Blog getBlogForEdit(Long id) throws NotFoundException {
+        return quickGetBlog(id);
+    }
+
+    public Blog updateBlog(Long id, Blog form, String tags) {
+
+        // 找到要修改的博客
+        Blog blog = blogMapper.getBlogById(id);
+
+        // 更新标题和内容
+        blog.setTitle(form.getTitle());
+        blog.setContent(form.getContent());
+
+        // 更新博客
+        blogMapper.updateBlog(blog);
+        // 更新标签
+        blog = TagUtils.setBlogTags(blog, tags);
+
+        // 清除缓存
+        cacheService.delFromRedis("blogId:" + id);
+
+        return blog;
+    }
+
 }

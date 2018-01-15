@@ -2,20 +2,27 @@ package vip.fanrong.controller;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vip.fanrong.exception.NotFoundException;
 import vip.fanrong.form.BlogCreateForm;
 import vip.fanrong.model.Blog;
 import vip.fanrong.model.User;
 import vip.fanrong.service.BlogService;
 import vip.fanrong.service.CommentService;
+import vip.fanrong.util.LuceneUtils;
+import vip.fanrong.util.TagUtils;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -63,7 +70,6 @@ public class BlogController {
             model.addAttribute("blogs", new PageInfo<>(blogService.getBlogsByTag(tag.get())));
         } else {
             PageInfo pageInfo = new PageInfo<>(blogService.showBlogs());
-            System.out.println(pageInfo);
             model.addAttribute("blogs", pageInfo);
         }
         return "list";
@@ -78,4 +84,56 @@ public class BlogController {
         model.addAttribute("comments", commentService.getCommentsByBlogId(id));
         return "item";
     }
+
+    // 删除一篇博文
+    @DeleteMapping("/blogs/{id}")
+    public String deleteBlog(@PathVariable("id") Long id,
+                             HttpSession session,
+                             final RedirectAttributes redirectAttributes) {
+        blogService.deleteBlog(id);
+        redirectAttributes.addFlashAttribute("delete", "success");
+        return "redirect:/admin/" + ((User) session.getAttribute("CURRENT_USER")).getId();
+    }
+
+    //获取编辑某一篇博文的页面
+    @GetMapping("/blogs/{id}/edit")
+    public String showEditBlog(@PathVariable("id") Long id, Model model) throws NotFoundException {
+        Blog blog = blogService.getBlogForEdit(id);
+        model.addAttribute("blog", blog);
+        model.addAttribute("alltags", TagUtils.toStringTags(blog.getTags()));
+        model.addAttribute("edit", 1);
+        return "create";
+    }
+
+    //提交修改过的博文
+    @PostMapping("/blogs/{id}")
+    public String updateBlog(@PathVariable("id") Long id,
+                             @RequestParam(value = "alltags", required = false) String tags,
+                             @ModelAttribute("blog") @Valid BlogCreateForm form,
+                             BindingResult result,
+                             HttpSession session) {
+        if (result.hasErrors()) {
+            return "create";
+        }
+        Blog blog = form.toBlog();
+        blogService.updateBlog(id, blog, tags);
+        return "redirect:/blogs/" + id;
+    }
+
+    @PostMapping("/blogs/search")
+    public String search(Model model, @RequestParam("key") String key) {
+        List<Blog> blogs = new ArrayList<>();
+        if (key == null || key.length() == 0) {
+
+        } else {
+            try {
+                blogs = LuceneUtils.search(key, 1, 5);
+            } catch (IOException | ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        model.addAttribute("blogs", blogs);
+        return "search";
+    }
+
 }

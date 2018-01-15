@@ -12,13 +12,13 @@ import vip.fanrong.filter.PageCachingFilter;
 @AutoConfigureAfter(CacheConfiguration.class)
 public class PageCacheConfiguration {
 
-    // 这两个页面缓存一下
+    // 页面缓存
     @Bean
     public FilterRegistrationBean registerBlogsPageFilter() {
         PageCachingFilter customPageCachingFilter = new PageCachingFilter("vip.fanrong.mapper.index");
         FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
         filterRegistrationBean.setFilter(customPageCachingFilter);
-        filterRegistrationBean.setUrlPatterns(Lists.newArrayList("/blogs", "/kds"));
+        filterRegistrationBean.setUrlPatterns(Lists.newArrayList("/kds"));
         return filterRegistrationBean;
     }
 

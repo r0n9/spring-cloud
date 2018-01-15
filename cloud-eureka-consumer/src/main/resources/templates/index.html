@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="/css/sidbar.css">
     <link rel="stylesheet" href="/css/blog.css">
     <link rel="stylesheet" href="/css/highlight.css">
-    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
 </head>
 
 <body>
@@ -28,7 +28,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand">or233</a>
+            <a class="navbar-brand">or233分享</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
@@ -36,7 +36,7 @@
                 <li><a href="/blogs">所有分享</a></li>
                 <li><a th:unless="${session.CURRENT_USER == null}" th:href="@{'/admin/'+${session.CURRENT_USER.id}}">个人中心</a>
                 </li>
-                <li><a href="/blogs/create">创建分享</a></li>
+                <li><a href="/blogs/create">分享一下</a></li>
                 <li><a th:unless="${session.CURRENT_USER == null}" href="logout">退出登录</a></li>
                 <li><a th:if="${session.CURRENT_USER == null}" href="/login">登陆</a></li>
                 <li><a th:if="${session.CURRENT_USER == null}" href="/register">注册</a></li>
@@ -56,8 +56,8 @@
                 <h3><span th:text="${blog.title}"><a th:href="@{'/blogs/'+${blog.id}}">title</a></span></h3>
                 <div class="clr"></div>
                 <p class="infopost">分享于 <span class="date blue"
-                                              th:text="${#dates.format(blog.createdTime, 'yyyy-MM-dd')}">date</span>&nbsp;|&nbsp;
-                    分享者： <a class="blue" th:text="${blog.author.username}">author</a></p>
+                                              th:text="${#dates.format(blog.createdTime, 'yyyy-MM-dd')}">date</span>&nbsp;&nbsp;
+                    by <a class="blue" th:text="${blog.author.username}">author</a></p>
                 <!--<img src="images/img1.jpg" width="227" height="205" alt="image" class="fl" />-->
                 <div class="single-blog">
                     <p class="blog-post-content" th:utext="${blog.content}">content</p>
