@@ -138,6 +138,8 @@ public class BlogService {
             cacheService.incrScore("tags", tag.getName(), 1);
         }
 
+        zSetOperations.removeRangeByScore("tags", 0, 2);
+
         tagMapper.deleteByBlog(id);
     }
 
