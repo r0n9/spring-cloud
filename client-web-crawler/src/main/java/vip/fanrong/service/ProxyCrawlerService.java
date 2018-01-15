@@ -37,9 +37,11 @@ public class ProxyCrawlerService {
 
     private static boolean isValidateProxyRunning = false;
 
+
+    private static ExecutorService service = Executors.newSingleThreadExecutor();
+
     Integer testProxy(ProxyConfig proxyConfig) {
 
-        ExecutorService service = Executors.newSingleThreadExecutor();
         FutureTask<Integer> futureTask = new FutureTask<Integer>(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
@@ -47,6 +49,7 @@ public class ProxyCrawlerService {
                 return status;
             }
         });
+
         service.submit(futureTask);
 
         Integer status;
@@ -58,8 +61,6 @@ public class ProxyCrawlerService {
             status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
         } catch (TimeoutException e) {
             status = HttpStatus.SC_GATEWAY_TIMEOUT;
-        } finally {
-            service.shutdown();
         }
 
         return status;

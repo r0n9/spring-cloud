@@ -1,4 +1,4 @@
-package vip.fanrong;
+package vip.fanrong.schedule;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -15,15 +15,9 @@ import vip.fanrong.service.ZmzCrawlerService;
  */
 @Configuration
 @EnableScheduling
-public class ScheduleConfiguration implements SchedulingConfigurer {
+public class ZmzScheduleConfiguration implements SchedulingConfigurer {
     @Autowired
     private ZmzCrawlerService zmzCrawlerService;
-
-    @Autowired
-    private ProxyCrawlerService proxyCrawlerService;
-
-    @Autowired
-    private KdsCrawlerService kdsCrawlerService;
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
@@ -44,29 +38,6 @@ public class ScheduleConfiguration implements SchedulingConfigurer {
         scheduledTaskRegistrar.addCronTask(() -> {
             zmzCrawlerService.zmzAccountLoginAll();
         }, "0 50 3,15 * * ?"); // 每天3:50
-
-        // 获取Gatherproxy SOCKS代理
-        scheduledTaskRegistrar.addCronTask(() -> {
-            ProxyConfig proxy = proxyCrawlerService.getRandomValidatedProxy("SOCKS");
-            proxyCrawlerService.loadSocksProxyConfigsFromGatherproxy(proxy, null);
-        }, "0 5 * * * ?"); //
-
-        // 获取西刺代理
-        scheduledTaskRegistrar.addCronTask(() -> {
-            ProxyConfig proxy = proxyCrawlerService.getRandomValidatedProxy();
-            proxyCrawlerService.loadProxyConfigsFromXicidaili(proxy);
-        }, "0 10 * * * ?"); // 10分
-
-        // 清洗验证代理
-        scheduledTaskRegistrar.addCronTask(() -> {
-            proxyCrawlerService.validateProxy(100);
-        }, "0 15 * * * ?"); // 15
-
-        // KDS热门
-        scheduledTaskRegistrar.addCronTask(() -> {
-            ProxyConfig proxy = proxyCrawlerService.getRandomValidatedProxy();
-            kdsCrawlerService.loadPopularTopics(proxy, 20);
-        }, "0 25,55 * * * ?"); // 25/55分
     }
 
 }

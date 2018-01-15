@@ -47,7 +47,7 @@ public class ZmzCrawlerService {
     private static final DateTimeFormatter FORMATTER_SIMPLE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
             .withZone(ZoneId.of("GMT+08:00"));
 
-    private static final Pattern URL_PATTERN_XIAZAI003 = Pattern.compile("((http://xiazai003\\.com/\\w+))");
+    private static final Pattern URL_PATTERN_XIAZAI003 = Pattern.compile("((http://zmz001\\.com/\\w+))");
 
     private static final Pattern URL_PATTERN_RESOURCE_ID = Pattern.compile("http://m.zimuzu.tv/resource/(\\d+)");
 
