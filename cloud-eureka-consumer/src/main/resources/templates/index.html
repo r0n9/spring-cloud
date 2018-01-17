@@ -59,7 +59,9 @@
                 <div class="clr"></div>
                 <p class="infopost">分享于 <span class="date blue"
                                               th:text="${#dates.format(blog.createdTime, 'yyyy-MM-dd')}">date</span>&nbsp;&nbsp;
-                    by <a class="blue" th:text="${blog.author.username}">author</a></p>
+                    by <a class="blue" th:text="${blog.author.username}">author</a> &nbsp;&nbsp;
+                    评论 <a class="blue" th:if="${blog.comments == null}">0</a>
+                       <a class="blue" th:unless="${blog.comments == null}" th:text="${#lists.size(blog.comments)}">0</a></p>
                 <!--<img src="images/img1.jpg" width="227" height="205" alt="image" class="fl" />-->
                 <div class="single-blog">
                     <p class="blog-post-content" th:utext="${blog.content}">content</p>
@@ -125,7 +127,7 @@
         <div class="clr"></div>
     </div>
 </div>
-<footer>
+<footer class="buttom">
     &copy; 2018 Or233, Org &middot; <a href="#">隐私</a> &middot; <a href="#">条款</a>
 </footer>
 

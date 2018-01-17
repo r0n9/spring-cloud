@@ -81,7 +81,6 @@ public class BlogController {
     public String showBlog(@PathVariable("id") Long id, Model model) throws NotFoundException {
         Blog blog = blogService.getBlogForBrowse(id);
         model.addAttribute("blog", blog);
-        model.addAttribute("comments", commentService.getCommentsByBlogId(id));
         return "item";
     }
 

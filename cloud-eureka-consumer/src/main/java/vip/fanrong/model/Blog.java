@@ -2,6 +2,7 @@ package vip.fanrong.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 /*
@@ -22,6 +23,8 @@ public class Blog implements Serializable {
     private Date createdTime;
 
     private Set<Tag> tags;
+
+    private List<Comment> comments;
 
     public Blog() {
         createdTime = new Date();
@@ -86,6 +89,14 @@ public class Blog implements Serializable {
         this.author = author;
     }
 
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
+
     @Override
     public String toString() {
         return "Blog{" +
@@ -95,6 +106,7 @@ public class Blog implements Serializable {
                 ", content='" + content + '\'' +
                 ", createdTime=" + createdTime +
                 ", tags=" + tags +
+                ", comments=" + comments +
                 '}';
     }
 }

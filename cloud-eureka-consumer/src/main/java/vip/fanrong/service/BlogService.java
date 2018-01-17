@@ -12,6 +12,7 @@ import vip.fanrong.exception.NotFoundException;
 import vip.fanrong.mapper.BlogMapper;
 import vip.fanrong.mapper.TagMapper;
 import vip.fanrong.model.Blog;
+import vip.fanrong.model.Comment;
 import vip.fanrong.model.Tag;
 import vip.fanrong.util.TagUtils;
 
@@ -28,6 +29,9 @@ public class BlogService {
     private TagMapper tagMapper;
     private CacheService cacheService;
     private ZSetOperations zSetOperations;
+
+    @Autowired
+    private CommentService commentService;
 
     @Autowired
     public BlogService(RedisTemplate redisTemplate, BlogMapper blogMapper, TagMapper tagMapper, CacheService cacheService) {
@@ -47,6 +51,7 @@ public class BlogService {
         List<Blog> blogs = blogMapper.getBlogs(null, null);
         for (Blog blog : blogs) {
             blog.setContent(Jsoup.parse(blog.getContent()).text());
+            blog.setComments(commentService.getCommentsByBlogId(blog.getId()));
         }
         return blogs;
     }
@@ -55,6 +60,7 @@ public class BlogService {
         List<Blog> blogs = blogMapper.getBlogs(null, tag);
         for (Blog blog : blogs) {
             blog.setContent(Jsoup.parse(blog.getContent()).text());
+            blog.setComments(commentService.getCommentsByBlogId(blog.getId()));
         }
         return blogs;
     }
@@ -100,6 +106,9 @@ public class BlogService {
             if (blog == null) {
                 throw new NotFoundException("blog not found");
             }
+
+            blog.setComments(commentService.getCommentsByBlogId(id));
+
             Long rank = zSetOperations.rank("hotBlogsRank", "" + id);
             if (rank != null && rank <= 20) {
                 // 排名在前二十，要缓存，转换成json

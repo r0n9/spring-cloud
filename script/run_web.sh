@@ -10,11 +10,11 @@ scp cloud-eureka-consumer/target/*.jar rong@s5.fanrong.vip:/home/rong/cloud/web
 ssh rong@s5.fanrong.vip 'ps -ef|grep java|grep rong|grep cloud-eureka-consumer|grep -v grep|cut -c 9-15|xargs kill -9'
 
 # 启动client-web-crawler
-ssh rong@s5.fanrong.vip 'cd /home/rong/cloud/web; nohup java -jar cloud-eureka-consumer-1.0-SNAPSHOT.jar > ~/logs/web.log 2>&1 &'
+ssh rong@s5.fanrong.vip 'cd /home/rong/cloud/web; nohup java -jar cloud-eureka-consumer-1.0-SNAPSHOT.jar &'
 
 scp cloud-eureka-consumer/target/*.jar rong@or233.cn:/home/rong/cloud/web
 ssh rong@or233.cn 'ps -ef|grep java|grep rong|grep cloud-eureka-consumer|grep -v grep|cut -c 9-15|xargs kill -9'
-ssh rong@or233.cn 'cd /home/rong/cloud/web; nohup java -jar cloud-eureka-consumer-1.0-SNAPSHOT.jar > ~/logs/web.log 2>&1 &'
+ssh rong@or233.cn 'cd /home/rong/cloud/web; nohup java -jar cloud-eureka-consumer-1.0-SNAPSHOT.jar &'
 
 
 #scp client-web-crawler/target/*.jar rong@s5.fanrong.vip:/home/rong/cloud/client-web-crawler

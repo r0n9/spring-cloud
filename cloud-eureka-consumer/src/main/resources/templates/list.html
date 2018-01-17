@@ -59,7 +59,9 @@
                     <a th:href="@{'/blogs/'+${blog.id}}" th:text="${blog.title}">title</a>
                 </h3>
                 分享于<span class="text-muted date" th:text="${#dates.format(blog.createdTime, 'MM月dd日 HH:mm')}"> 2 mins ago</span>
-                &nbsp;&nbsp;by <a class="blue" th:text="${blog.author.username}">author</a>
+                &nbsp;&nbsp;by <a class="blue" th:text="${blog.author.username}">author</a>&nbsp;&nbsp;
+                评论 <a class="blue" th:if="${blog.comments == null}">0</a>
+                <a class="blue" th:unless="${blog.comments == null}" th:text="${#lists.size(blog.comments)}">0</a>
                 <a th:href="@{'/blogs?tag=' + ${tag.name}}" th:each="tag: ${blog.tags}">
                     <span class="label label-default tag" th:text="${tag.name}">标签</span>
                 </a>
@@ -125,7 +127,7 @@
 
 </div>
 
-<footer>
+<footer class="buttom">
     &copy; 2018 Or233, Org &middot; <a href="#">隐私</a> &middot; <a href="#">条款</a>
 </footer>
 

@@ -77,14 +77,14 @@
                 </div>
                 <h5 th:if="${session.CURRENT_USER == null}">您还没<a th:href="@{'/login?next=/blogs/'+${blog.id}}">登陆</a>，请登陆后再评论！
                 </h5>
-                <ul class="list-unstyled comment-template" th:each="comment: ${comments}">
+                <ul class="list-unstyled comment-template" th:unless="${blog.comments == null}" th:each="comment: ${blog.comments}">
                     <li class="clearfix">
                         <img th:src="@{'/avatar/'+${comment.commentor.id}}" alt="" class="avatar pull-left">
                         <p class="content">
-                            <a class="author-name" th:text="${comment.commentor.username}">Harttle</a>
+                            <a class="author-name" th:text="${comment.commentor.username}">commentor</a>
                             <span class="comment-time text-muted date"
                                   th:text="${#dates.format(comment.createdTime, 'yyyy-MM-dd HH:mm:ss')}">2 mins ago</span>
-                            <span class="comment-content" th:text="${comment.content}">commit</span>
+                            <span class="comment-content" th:text="${comment.content}">content</span>
                         </p>
                     </li>
                 </ul>

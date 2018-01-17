@@ -14,6 +14,9 @@ public class CommentService {
     @Autowired
     private CommentMapper commentMapper;
 
+    @Autowired
+    private CacheService cacheService;
+
     //得到一篇博客的所有评论
     public List<Comment> getCommentsByBlogId(Long id) {
         return commentMapper.getCommentsByBlogId(id);
@@ -21,11 +24,17 @@ public class CommentService {
 
     @Async
     public void createComment(Long blogId, Comment comment) {
+        // 删除DB记录
         commentMapper.createComment(blogId, comment);
+        // 清除缓存
+        cacheService.delFromRedis("blogId:" + blogId);
     }
 
     @Async
     public void deleteComment(Comment comment) {
+        // 删除DB记录
         commentMapper.deleteComment(comment.getCommentId());
+        // 清除缓存
+        cacheService.delFromRedis("blogId:" + comment.getBlogId());
     }
 }
