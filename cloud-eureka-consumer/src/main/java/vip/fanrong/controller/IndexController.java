@@ -9,11 +9,16 @@ import vip.fanrong.Constant;
 import vip.fanrong.client.KdsCrawlerClient;
 import vip.fanrong.model.Blog;
 import vip.fanrong.model.Tag;
+import vip.fanrong.model.User;
 import vip.fanrong.service.BlogService;
 import vip.fanrong.service.TagService;
 import vip.fanrong.service.UserService;
+import vip.fanrong.util.HttpUtils;
+import vip.fanrong.util.MD5Utils;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,16 +40,51 @@ public class IndexController {
     @Autowired
     private TagService tagService;
 
+    @Autowired
+    private HttpServletRequest httpServletRequest;
+
     //网站首页
     @GetMapping("/")
-    public String showMainPage(@CookieValue(Constant.COOKIE_KEY_NAME) Optional<String> cookieEmail,
+    public String showMainPage(@CookieValue(Constant.COOKIE_KEY_NAME_1) Optional<String> cookieUserId,
+                               @CookieValue(Constant.COOKIE_KEY_NAME_2) Optional<String> cookieToken1,
+                               @CookieValue(Constant.COOKIE_KEY_NAME_3) Optional<String> cookieToken2,
                                HttpSession session,
                                Model model,
                                @RequestParam("page") Optional<Integer> page) {
-        // 自动登录
+        // 自动登录, IP必须跟上次登录IP一致 TODO ip区域一致更好，解决动态IP分配问题
         if (session.getAttribute("CURRENT_USER") == null
-                && cookieEmail != null && cookieEmail.isPresent()) {
-            session.setAttribute("CURRENT_USER", userService.getUserByEmail(cookieEmail.get()));
+                && cookieUserId != null && cookieUserId.isPresent()
+                && cookieToken1 != null && cookieToken1.isPresent()
+                && cookieToken2 != null && cookieToken2.isPresent()) {
+
+            String clientIP = "unknown";
+            try {
+                clientIP = HttpUtils.getIpAddress(httpServletRequest);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (!"unknown".equalsIgnoreCase(clientIP)) {
+                String token2 = MD5Utils.getMD5(clientIP + "+SALT"); // 用户登陆IP验证
+                if (cookieToken2.get().equalsIgnoreCase(token2)) {
+                    try {
+                        long id = Long.parseLong(cookieUserId.get());
+                        User user = userService.getUserById(id);
+                        if (user != null) {
+                            String token1 = MD5Utils.getMD5(user.getPassword() + "+SALT"); // 用户密码
+                            if (cookieToken1.get().equalsIgnoreCase(token1)) {
+                                session.setAttribute("CURRENT_USER", user);
+                                session.setAttribute("USER_NAME", user.getUsername());
+                                session.setAttribute("TOKEN1", token1);
+                                session.setAttribute("TOKEN2", token2);
+                                session.setAttribute("IP", clientIP);
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
 
         // 获取热门博客
