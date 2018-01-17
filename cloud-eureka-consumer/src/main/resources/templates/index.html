@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="/css/highlight.css">
     <link rel="icon" type="image/png" href="/images/favicon.png">
     <meta name="baidu_union_verify" content="f91cc60df087bd999fb4f559ec93c1c7">
-
+    <script src="/lib/baidu-tongji/tongji.js"></script>
 </head>
 
 <body>
@@ -61,7 +61,8 @@
                                               th:text="${#dates.format(blog.createdTime, 'yyyy-MM-dd')}">date</span>&nbsp;&nbsp;
                     by <a class="blue" th:text="${blog.author.username}">author</a> &nbsp;&nbsp;
                     评论 <a class="blue" th:if="${blog.comments == null}">0</a>
-                       <a class="blue" th:unless="${blog.comments == null}" th:text="${#lists.size(blog.comments)}">0</a></p>
+                    <a class="blue" th:unless="${blog.comments == null}" th:text="${#lists.size(blog.comments)}">0</a>
+                </p>
                 <!--<img src="images/img1.jpg" width="227" height="205" alt="image" class="fl" />-->
                 <div class="single-blog">
                     <p class="blog-post-content" th:utext="${blog.content}">content</p>
@@ -116,7 +117,7 @@
             <h2><span>分享圈</span></h2>
             <p>说明<br/>
                 可以说这里分享的一切都是胡说八道，请各位看官不要相信或者跟着去尝试，产生一切后果自行承担！凡涉及法律道德等一切问题，请及时联系管理员删除！
-                <a href="#">吓吓侬</a> </p>
+                <a href="#">吓吓侬</a></p>
         </div>
         <div class="col c3">
             <h2><span>Contact</span></h2>
