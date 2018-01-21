@@ -1,6 +1,19 @@
 package vip.fanrong.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
+import net.minidev.json.JSONUtil;
+import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.*;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
+import vip.fanrong.Constant;
+import vip.fanrong.client.SearchServiceClient;
 import vip.fanrong.exception.NotFoundException;
 import vip.fanrong.mapper.BlogMapper;
 import vip.fanrong.mapper.TagMapper;
@@ -16,7 +31,9 @@ import vip.fanrong.model.Comment;
 import vip.fanrong.model.Tag;
 import vip.fanrong.util.TagUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -44,6 +61,7 @@ public class BlogService {
     public void createBlog(Blog blog, String tags) {
         blogMapper.createBlog(blog);
         TagUtils.setBlogTags(blog, tags);
+        createIndex(blog);
     }
 
 
@@ -150,6 +168,9 @@ public class BlogService {
         zSetOperations.removeRangeByScore("tags", 0, 2);
 
         tagMapper.deleteByBlog(id);
+
+        searchServiceClient.deleteIndex(Constant.INDEX_KEY, String.valueOf(id));
+
     }
 
     public Blog getBlogForEdit(Long id) throws NotFoundException {
@@ -173,7 +194,79 @@ public class BlogService {
         // 清除缓存
         cacheService.delFromRedis("blogId:" + id);
 
+        // index
+        updateIndex(blog);
+
         return blog;
     }
 
+
+    @Autowired
+    private SearchServiceClient searchServiceClient;
+
+    public void createIndex(Blog blog) {
+        Document doc = new Document();
+        doc.add(new TextField("id", blog.getId() + "", Field.Store.YES));
+        doc.add(new TextField("title", blog.getTitle(), Field.Store.YES)); // 对标题做索引
+        doc.add(new TextField("content", blog.getContent(), Field.Store.YES));// 对文章内容做索引
+        searchServiceClient.createIndex(Constant.INDEX_KEY, blog.getId() + "", fromLuceneDoc(doc));
+    }
+
+    public void updateIndex(Blog blog) {
+        Document doc = new Document();
+        doc.add(new TextField("id", blog.getId() + "", Field.Store.YES));
+        doc.add(new TextField("title", blog.getTitle(), Field.Store.YES));
+        doc.add(new TextField("content", blog.getContent(), Field.Store.YES));
+        searchServiceClient.updateIndex(Constant.INDEX_KEY, blog.getId() + "", fromLuceneDoc(doc));
+    }
+
+    public List<Blog> search(String keyword, int pageStart, int pageSize) {
+        ArrayList<String> fields = new ArrayList<>();
+        fields.add("title");
+        fields.add("content");
+        ObjectNode blogsNode = searchServiceClient.search(Constant.INDEX_KEY, keyword, fields, pageStart, pageSize);
+
+        String status = blogsNode.get("status").asText();
+
+        if ("success".equalsIgnoreCase(status)) {
+            JsonNode results = blogsNode.get("results");
+            if (results == null) return null;
+            List<Blog> blogs = new LinkedList<>();
+
+            for (JsonNode result : results) {
+                String id = result.get("id").asText();
+                String title = result.get("title").asText();
+                String content = result.get("content").asText();
+                Blog blog = new Blog();
+                blog.setId(Long.parseLong(id));
+                blog.setTitle(title);
+                blog.setContent(content);
+                blogs.add(blog);
+            }
+            return blogs;
+        }
+
+        return null;
+    }
+
+
+    public Document toLuceneDoc(String id, vip.fanrong.model.Document doc) {
+        Document docLucene = new Document();
+        docLucene.add(new TextField("id", id, Field.Store.YES));
+        for (vip.fanrong.model.Document.TextField textField : doc.getTextFields()) {
+            if ("id".equalsIgnoreCase(textField.getName())) {
+                continue;
+            }
+            docLucene.add(new TextField(textField.getName(), textField.getValue(), textField.getStore() ? Field.Store.YES : Field.Store.NO));
+        }
+        return docLucene;
+    }
+
+    public vip.fanrong.model.Document fromLuceneDoc(Document docLucene) {
+        vip.fanrong.model.Document doc = new vip.fanrong.model.Document();
+        List<vip.fanrong.model.Document.TextField> fields = new ArrayList<>();
+        doc.setTextFields(fields);
+        docLucene.forEach(f -> fields.add(new vip.fanrong.model.Document.TextField(f.name(), f.stringValue(), true)));
+        return doc;
+    }
 }

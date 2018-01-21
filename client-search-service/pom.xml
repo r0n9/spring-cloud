@@ -1,21 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>client-kds-crawler</artifactId>
-    <packaging>jar</packaging>
-
-    <name>client-kds-crawler</name>
-    <description>KDS crawler, as the independent service client</description>
-
-
     <parent>
-        <groupId>vip.fanrong</groupId>
         <artifactId>spring-cloud</artifactId>
+        <groupId>vip.fanrong</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
 
+    <artifactId>client-search-service</artifactId>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
@@ -23,32 +18,33 @@
             <artifactId>spring-cloud-starter-eureka</artifactId>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger2 -->
+        <!-- lucene -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>2.2.2</version>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId><!--lucene核心-->
+            <version>6.6.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.2.2</version>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analyzers-common</artifactId><!--分词器-->
+            <version>6.6.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/io.swagger/swagger-annotations -->
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>1.5.15</version>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analyzers-smartcn</artifactId><!--中文分词器-->
+            <version>6.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId><!--格式化-->
+            <version>6.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>vip.fanrong</groupId>
+            <artifactId>cloud-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
-
-        <!-- https://mvnrepository.com/artifact/net.sf.ehcache/ehcache -->
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache</artifactId>
-            <version>2.10.4</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -74,6 +70,4 @@
             </plugin>
         </plugins>
     </build>
-
-
 </project>

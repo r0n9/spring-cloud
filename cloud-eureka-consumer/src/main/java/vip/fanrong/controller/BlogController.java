@@ -125,11 +125,7 @@ public class BlogController {
         if (key == null || key.length() == 0) {
 
         } else {
-            try {
-                blogs = LuceneUtils.search(key, 1, 5);
-            } catch (IOException | ParseException e) {
-                e.printStackTrace();
-            }
+            blogs = blogService.search(key, 1, 5);
         }
         model.addAttribute("blogs", blogs);
         return "search";
