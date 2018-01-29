@@ -44,7 +44,7 @@ public class BlogController {
     }
 
     // 提交新建的博文
-    @PostMapping("/blogs")
+    @PostMapping("/blogs/create")
     public String createBlog(@ModelAttribute("blog") @Valid BlogCreateForm form,
                              BindingResult result,
                              @RequestParam(value = "alltags", required = false) String tags,
