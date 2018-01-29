@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/client-image-ocr/client-image-ocr.iml" filepath="$PROJECT_DIR$/client-image-ocr/client-image-ocr.iml" />
-      <module fileurl="file://$PROJECT_DIR$/client-kds-crawler/client-kds-crawler.iml" filepath="$PROJECT_DIR$/client-kds-crawler/client-kds-crawler.iml" />
+      <module fileurl="file://$PROJECT_DIR$/client-search-service/client-search-service.iml" filepath="$PROJECT_DIR$/client-search-service/client-search-service.iml" />
       <module fileurl="file://$PROJECT_DIR$/client-web-crawler/client-web-crawler.iml" filepath="$PROJECT_DIR$/client-web-crawler/client-web-crawler.iml" />
       <module fileurl="file://$PROJECT_DIR$/cloud-api-gateway/cloud-api-gateway.iml" filepath="$PROJECT_DIR$/cloud-api-gateway/cloud-api-gateway.iml" />
       <module fileurl="file://$PROJECT_DIR$/cloud-common/cloud-common.iml" filepath="$PROJECT_DIR$/cloud-common/cloud-common.iml" />

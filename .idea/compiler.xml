@@ -7,7 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="client-image-ocr" />
-        <module name="client-kds-crawler" />
+        <module name="client-search-service" />
         <module name="client-uzumiz-crawler" />
         <module name="client-web-crawler" />
         <module name="cloud-api-gateway" />
@@ -20,6 +20,7 @@
     <bytecodeTargetLevel>
       <module name="client-image-ocr" target="1.8" />
       <module name="client-kds-crawler" target="1.8" />
+      <module name="client-search-service" target="1.8" />
       <module name="client-uzumiz-crawler" target="1.8" />
       <module name="client-web-crawler" target="1.8" />
       <module name="cloud-api-gateway" target="1.8" />
