@@ -16,6 +16,8 @@ import vip.fanrong.common.JsonUtil;
 import vip.fanrong.model.SearchResult;
 
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -25,6 +27,10 @@ import java.util.*;
 public class SearchEngineService {
     private static final Logger LOG = LoggerFactory.getLogger(SearchEngineService.class);
 
+    Lock locker = new ReentrantLock();
+
+    static Launcher launcher = new Launcher();
+    static SessionFactory factory = launcher.launch();
 
     public ObjectNode searchGoogle(String key, int pageNum) {
 
@@ -33,9 +39,9 @@ public class SearchEngineService {
 
         Map<String, String> pageUrls = new LinkedHashMap<>();
         int totalPageNums = 1;
-        Launcher launcher = new Launcher();
         List<SearchResult> resultList = new ArrayList<>();
-        try (SessionFactory factory = launcher.launch(); Session session = factory.create()) {
+        locker.lock();
+        try (Session session = factory.create()) {
             session.navigate("https://www.google.com.hk/")
                     .waitDocumentReady()
                     .installSizzle()
@@ -76,6 +82,8 @@ public class SearchEngineService {
 
         watch.stop();
 
+        locker.unlock();
+
         ObjectNode node = JsonUtil.createObjectNode();
         node.put("page_num", pageNum);
         node.put("total_num", totalPageNums);
@@ -95,6 +103,8 @@ public class SearchEngineService {
         int totalPageNums = 1;
         Launcher launcher = new Launcher();
         List<SearchResult> resultList = new ArrayList<>();
+        locker.lock();
+
         try (SessionFactory factory = launcher.launch(); Session session = factory.create()) {
             session.navigate("https://www.baidu.com/s?wd=" + key)
                     .waitDocumentReady()
@@ -134,6 +144,7 @@ public class SearchEngineService {
         }
 
         watch.stop();
+        locker.unlock();
 
         ObjectNode node = JsonUtil.createObjectNode();
         node.put("page_num", pageNum);
