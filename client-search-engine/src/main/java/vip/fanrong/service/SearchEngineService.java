@@ -1,10 +1,8 @@
 package vip.fanrong.service;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.webfolder.cdp.Launcher;
-import io.webfolder.cdp.session.Session;
-import io.webfolder.cdp.session.SessionFactory;
 import org.apache.commons.lang.time.StopWatch;
+import org.apache.http.client.methods.HttpGet;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -13,11 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import vip.fanrong.common.JsonUtil;
+import vip.fanrong.common.MyHttpClient;
+import vip.fanrong.common.MyHttpResponse;
 import vip.fanrong.model.SearchResult;
 
 import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -27,11 +25,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SearchEngineService {
     private static final Logger LOG = LoggerFactory.getLogger(SearchEngineService.class);
 
-    Lock locker = new ReentrantLock();
-
-    static Launcher launcher = new Launcher();
-    static SessionFactory factory = launcher.launch();
-
     public ObjectNode searchGoogle(String key, int pageNum) {
 
         StopWatch watch = new StopWatch();
@@ -40,49 +33,38 @@ public class SearchEngineService {
         Map<String, String> pageUrls = new LinkedHashMap<>();
         int totalPageNums = 1;
         List<SearchResult> resultList = new ArrayList<>();
-        locker.lock();
-        try (Session session = factory.create()) {
-            session.navigate("https://www.google.com.hk/")
-                    .waitDocumentReady()
-                    .installSizzle()
-                    .enableNetworkLog()
-                    .click("#lst-ib")
-                    .sendKeys(key)
-                    .sendEnter()
-                    .wait(1000);
-
-            String html = session.getContent();
-
-            Document doc = Jsoup.parse(html);
-            Elements elements = doc.select("#rso > div > div > div");
 
 
-            for (Element element : elements) {
-                Element titleElmt = element.selectFirst("a");
-                Element urlElmt = element.selectFirst("a");
-                Element briefElmt = element.selectFirst("span.st");
+        MyHttpResponse myHttpResponse = MyHttpClient.getHttpResponse(new HttpGet("https://www.google.com.hk/search?q=" + key), null, null);
+        String html = myHttpResponse.getHtml();
 
-                if (titleElmt != null && urlElmt != null) {
-                    if ("".equals(titleElmt.text())) {
-                        continue;
-                    }
-                    resultList.add(new SearchResult(titleElmt.text(), urlElmt.attr("href"), null == briefElmt ? null : briefElmt.text()));
+        Document doc = Jsoup.parse(html);
+        Elements elements = doc.select("#rso > div > div > div");
+
+
+        for (Element element : elements) {
+            Element titleElmt = element.selectFirst("a");
+            Element urlElmt = element.selectFirst("a");
+            Element briefElmt = element.selectFirst("span.st");
+
+            if (titleElmt != null && urlElmt != null) {
+                if ("".equals(titleElmt.text())) {
+                    continue;
                 }
+                resultList.add(new SearchResult(titleElmt.text(), urlElmt.attr("href"), null == briefElmt ? null : briefElmt.text()));
             }
-
-            Elements navs = doc.select("#nav > tbody > tr > td > a.fl");
-            if (navs != null || !navs.isEmpty()) {
-                for (Element nav : navs) {
-                    pageUrls.put(nav.childNode(1).toString(), "https://www.google.com.hk" + nav.attr("href"));
-                    totalPageNums++;
-                }
-            }
-
         }
 
-        watch.stop();
+        Elements navs = doc.select("#nav > tbody > tr > td > a.fl");
+        if (navs != null || !navs.isEmpty()) {
+            for (Element nav : navs) {
+                pageUrls.put(nav.childNode(1).toString(), "https://www.google.com.hk" + nav.attr("href"));
+                totalPageNums++;
+            }
+        }
 
-        locker.unlock();
+
+        watch.stop();
 
         ObjectNode node = JsonUtil.createObjectNode();
         node.put("page_num", pageNum);
@@ -98,53 +80,43 @@ public class SearchEngineService {
 
         StopWatch watch = new StopWatch();
         watch.start();
-
+        List<SearchResult> resultList = new ArrayList<>();
         Map<String, String> pageUrls = new LinkedHashMap<>();
         int totalPageNums = 1;
-        Launcher launcher = new Launcher();
-        List<SearchResult> resultList = new ArrayList<>();
-        locker.lock();
 
-        try (SessionFactory factory = launcher.launch(); Session session = factory.create()) {
-            session.navigate("https://www.baidu.com/s?wd=" + key)
-                    .waitDocumentReady()
-                    .installSizzle()
-                    .enableNetworkLog();
+        MyHttpResponse myHttpResponse = MyHttpClient.getHttpResponse(new HttpGet("https://www.baidu.com/s?wd=" + key), null, null);
+        String html = myHttpResponse.getHtml();
 
-            String html = session.getContent();
-
-            Document doc = Jsoup.parse(html);
-            Elements elements = doc.select("#content_left > div");
+        Document doc = Jsoup.parse(html);
+        Elements elements = doc.select("#content_left > div");
 
 
-            for (Element element : elements) {
-                Element titleElmt = element.selectFirst("h3 > a");
-                Element urlElmt = element.selectFirst("h3 > a");
-                Element briefElmt = element.selectFirst("div.c-abstract");
+        for (Element element : elements) {
+            Element titleElmt = element.selectFirst("h3 > a");
+            Element urlElmt = element.selectFirst("h3 > a");
+            Element briefElmt = element.selectFirst("div.c-abstract");
 
-                if (titleElmt != null && urlElmt != null) {
-                    if ("".equals(titleElmt.text())) {
-                        continue;
-                    }
-                    resultList.add(new SearchResult(titleElmt.text(), urlElmt.attr("href"), null == briefElmt ? null : briefElmt.text()));
+            if (titleElmt != null && urlElmt != null) {
+                if ("".equals(titleElmt.text())) {
+                    continue;
                 }
+                resultList.add(new SearchResult(titleElmt.text(), urlElmt.attr("href"), null == briefElmt ? null : briefElmt.text()));
             }
-
-            Elements navs = doc.select("#page > a");
-            if (navs != null || !navs.isEmpty()) {
-                for (Element nav : navs) {
-                    if (nav.selectFirst("span.pc") == null) {
-                        continue;
-                    }
-                    pageUrls.put(nav.selectFirst("span.pc").text(), "https://www.baidu.com" + nav.attr("href"));
-                    totalPageNums++;
-                }
-            }
-
         }
 
+        Elements navs = doc.select("#page > a");
+        if (navs != null || !navs.isEmpty()) {
+            for (Element nav : navs) {
+                if (nav.selectFirst("span.pc") == null) {
+                    continue;
+                }
+                pageUrls.put(nav.selectFirst("span.pc").text(), "https://www.baidu.com" + nav.attr("href"));
+                totalPageNums++;
+            }
+        }
+
+
         watch.stop();
-        locker.unlock();
 
         ObjectNode node = JsonUtil.createObjectNode();
         node.put("page_num", pageNum);
