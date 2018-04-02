@@ -146,11 +146,4 @@ public class SearchEngineService {
 
     }
 
-    public static void main(String[] args) {
-        SearchEngineService service = new SearchEngineService();
-
-        ObjectNode node = service.searchGoogle("无耻家庭", 1);
-        System.out.println(node);
-    }
-
 }
