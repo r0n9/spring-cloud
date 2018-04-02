@@ -28,6 +28,7 @@
         <module>cloud-eureka-consumer</module>
         <module>client-image-ocr</module>
         <module>client-search-service</module>
+        <module>client-search-engine</module>
     </modules>
 
     <dependencyManagement>
