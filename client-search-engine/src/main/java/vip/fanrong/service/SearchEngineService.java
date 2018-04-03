@@ -70,8 +70,8 @@ public class SearchEngineService {
         node.put("page_num", pageNum);
         node.put("total_num", totalPageNums);
         node.put("cost_ms", watch.getTime());
-        node.putPOJO("results", JsonUtil.objectToJson(resultList));
-        node.putPOJO("page_urls", JsonUtil.objectToJson(pageUrls));
+        node.putPOJO("results", resultList);
+        node.putPOJO("page_urls", pageUrls);
 
         return node;
     }
@@ -122,8 +122,8 @@ public class SearchEngineService {
         node.put("page_num", pageNum);
         node.put("total_num", totalPageNums);
         node.put("cost_ms", watch.getTime());
-        node.putPOJO("results", JsonUtil.objectToJson(resultList));
-        node.putPOJO("page_urls", JsonUtil.objectToJson(pageUrls));
+        node.putPOJO("results", resultList);
+        node.putPOJO("page_urls", pageUrls);
 
         return node;
 
