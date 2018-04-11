@@ -1,7 +1,9 @@
 package vip.fanrong.service;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
+import org.apache.http.HttpException;
 import org.apache.http.client.methods.HttpGet;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -25,18 +27,26 @@ import java.util.*;
 public class SearchEngineService {
     private static final Logger LOG = LoggerFactory.getLogger(SearchEngineService.class);
 
-    public ObjectNode searchGoogle(String key, int pageNum) {
+    public ObjectNode searchGoogle(String key, int pageNum, String pageUrl) throws Exception {
+        String url = null;
+        if (StringUtils.isNotBlank(pageUrl) && !"{}".equals(pageUrl) && !"null".equalsIgnoreCase(pageUrl)) {
+            url = pageUrl;
+        } else {
+            url = "https://www.google.com.hk/search?q=" + key;
+        }
 
         StopWatch watch = new StopWatch();
         watch.start();
+        MyHttpResponse myHttpResponse = MyHttpClient.getHttpResponse(new HttpGet(url), null, null);
+        String html = myHttpResponse.getHtml();
+        watch.stop();
+        return toGoogleObjectNode(key, html, pageNum, watch.getTime());
+    }
 
+    private ObjectNode toGoogleObjectNode(String key, String html, int pageNum, long time) {
         Map<String, String> pageUrls = new LinkedHashMap<>();
         int totalPageNums = 1;
         List<SearchResult> resultList = new ArrayList<>();
-
-
-        MyHttpResponse myHttpResponse = MyHttpClient.getHttpResponse(new HttpGet("https://www.google.com.hk/search?q=" + key), null, null);
-        String html = myHttpResponse.getHtml();
 
         Document doc = Jsoup.parse(html);
         Elements elements = doc.select("#rso > div > div > div");
@@ -63,20 +73,25 @@ public class SearchEngineService {
             }
         }
 
-
-        watch.stop();
-
         ObjectNode node = JsonUtil.createObjectNode();
+        node.put("keyword", key);
         node.put("page_num", pageNum);
         node.put("total_num", totalPageNums);
-        node.put("cost_ms", watch.getTime());
+        node.put("cost_ms", time);
         node.putPOJO("results", resultList);
         node.putPOJO("page_urls", pageUrls);
 
         return node;
     }
 
-    public ObjectNode searchBaidu(String key, int pageNum) {
+    public ObjectNode searchBaidu(String key, int pageNum, String pageUrl) throws Exception {
+
+        String url = null;
+        if (StringUtils.isNotBlank(pageUrl) && !"{}".equals(pageUrl) && !"null".equalsIgnoreCase(pageUrl)) {
+            url = pageUrl;
+        } else {
+            url = "https://www.baidu.com/s?wd=" + key;
+        }
 
         StopWatch watch = new StopWatch();
         watch.start();
@@ -84,8 +99,27 @@ public class SearchEngineService {
         Map<String, String> pageUrls = new LinkedHashMap<>();
         int totalPageNums = 1;
 
-        MyHttpResponse myHttpResponse = MyHttpClient.getHttpResponse(new HttpGet("https://www.baidu.com/s?wd=" + key), null, null);
+        MyHttpResponse myHttpResponse = MyHttpClient.getHttpResponse(new HttpGet(url), null, null);
         String html = myHttpResponse.getHtml();
+        watch.stop();
+
+        ObjectNode node = JsonUtil.createObjectNode();
+        node.put("keyword", key);
+        node.put("page_num", pageNum);
+        node.put("total_num", totalPageNums);
+        node.put("cost_ms", watch.getTime());
+        node.putPOJO("results", resultList);
+        node.putPOJO("page_urls", pageUrls);
+
+        return toBaiduObjectNode(key, html, pageNum, watch.getTime());
+
+    }
+
+    private ObjectNode toBaiduObjectNode(String key, String html, int pageNum, long time) {
+
+        List<SearchResult> resultList = new ArrayList<>();
+        Map<String, String> pageUrls = new LinkedHashMap<>();
+        int totalPageNums = 1;
 
         Document doc = Jsoup.parse(html);
         Elements elements = doc.select("#content_left > div");
@@ -115,18 +149,14 @@ public class SearchEngineService {
             }
         }
 
-
-        watch.stop();
-
         ObjectNode node = JsonUtil.createObjectNode();
+        node.put("keyword", key);
         node.put("page_num", pageNum);
         node.put("total_num", totalPageNums);
-        node.put("cost_ms", watch.getTime());
+        node.put("cost_ms", time);
         node.putPOJO("results", resultList);
         node.putPOJO("page_urls", pageUrls);
 
         return node;
-
     }
-
 }
